@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-
-const SriLankanDistricts = [
-  "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha",
-  "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala",
-  "Mannar", "Matale", "Matara", "Moneragala", "Mullaitivu", "Nuwara Eliya",
-  "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya",
-];
-
-const VehicleTypes = ["3 Wheel", "Car", "Van", "Bus", "Lorry", "Motorcycle", "Truck", "Wedding Hire"];
+import { SriLankanDistricts, dynamicData } from "@/settings";
 
 const Search = () => {
   const [district, setDistrict] = useState("");
@@ -80,7 +72,7 @@ const Search = () => {
               onChange={(e) => setVehicleType(e.target.value)}
             >
               <option value="">Any Vehicle</option>
-              {VehicleTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+              {dynamicData.vehicle_types.map((type) => <option key={type} value={type}>{type}</option>)}
             </select>
           </div>
 

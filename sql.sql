@@ -35,3 +35,57 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+
+
+-- 1. Enable PostGIS in the extensions schema
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;
+
+-- 2. Grant usage so your functions can see the types
+GRANT USAGE ON SCHEMA extensions TO postgres, anon, authenticated, service_role;
+
+-- Delete the old one first
+DROP FUNCTION IF EXISTS get_nearby_vehicles;
+
+-- Create the updated version with explicit schema paths
+CREATE OR REPLACE FUNCTION get_nearby_vehicles(
+  user_lat FLOAT, 
+  user_lon FLOAT, 
+  search_district TEXT, 
+  search_type TEXT
+)
+RETURNS TABLE (
+  id UUID,
+  make TEXT,
+  model TEXT,
+  district TEXT,
+  type TEXT,
+  image_urls TEXT[],
+  daily_rate INT,
+  latitude FLOAT,
+  longitude FLOAT,
+  dist_meters FLOAT
+) 
+LANGUAGE sql
+AS $$
+  SELECT 
+    id, 
+    make, 
+    model, 
+    district, 
+    type,
+    image_urls,
+    daily_rate,
+    latitude,
+    longitude,
+    -- We use the full path to extensions.geography to avoid the 'type does not exist' error
+    ST_Distance(
+      ST_SetSRID(ST_MakePoint(user_lon, user_lat), 4326)::extensions.geography,
+      ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::extensions.geography
+    ) AS dist_meters
+  FROM uploaded_rent_vehicles
+  WHERE 
+    (district = search_district OR search_district IS NULL OR search_district = '')
+    AND (type = search_type OR search_type IS NULL OR search_type = '')
+  ORDER BY dist_meters ASC;
+$$;
