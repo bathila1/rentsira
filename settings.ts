@@ -1,7 +1,9 @@
 const settingsData = {
   WebDomain: "rentsira.lk",
+  SiteDomain: "https://nonsocialistic-blanca-cleverishly.ngrok-free.dev/",
+  WebName: "Rent",
   WebTitle: "Rent",
-  FooterText: "Developed with ❤️ by Rent Team",
+  FooterText: "Developed with ❤️ by Bathila",
   WebDescription: "",
   WebKeywords: "",
 };

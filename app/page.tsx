@@ -1,123 +1,175 @@
-import React from "react";
-import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import Search from "@/components/Search";
+import { createClient } from '@/utils/supabase/server'
+import Link from 'next/link'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import Search from '@/components/Search'
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const supabase = await createClient();
-  
-  // 1. Setup Pagination Variables
-  const params = await searchParams;
-  const currentPage = parseInt(params.page || "1");
-  const itemsPerPage = 3; // Change this to 10 or 20 later if you want
-  const from = (currentPage - 1) * itemsPerPage;
-  const to = from + itemsPerPage - 1;
+export default async function Home() {
+  const supabase = await createClient()
 
-  // 2. Fetch data with Range (Pagination) and Count
-  const { data: vehicles, error, count } = await supabase
-    .from("uploaded_rent_vehicles")
-    .select("*", { count: "exact" }) // count: exact tells us total cars in DB
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) return <div style={{ padding: "20px" }}>Error: {error.message}</div>;
-
-  const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+  const { data: vehicles, count } = await supabase
+    .from('uploaded_rent_vehicles')
+    .select('*', { count: 'exact' })
+    .order('id', { ascending: false })
+    .limit(8)
 
   return (
-    <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto", fontFamily: "sans-serif" }}>
-      {/* Header */}
-      <Header/>
-      <Search/>
-      <header style={{ textAlign: "center", marginBottom: "40px" }}>
-        <h1 style={{ fontSize: "2.5rem", color: "#1e293b", margin: 0 }}>Rental Gallery</h1>
-        <p style={{ color: "#64748b" }}>Showing {from + 1} - {Math.min(to + 1, count || 0)} of {count} vehicles</p>
-      </header>
+    <div className="page">
+      <Header />
 
-      {/* Grid of Cards */}
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
-        gap: "25px",
-        marginBottom: "40px"
-      }}>
-        {vehicles?.map((car) => (
-          <Link key={car.id} href={`/vehicles/${car.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-            <div style={{ 
-              border: "1px solid #e2e8f0", 
-              borderRadius: "15px", 
-              overflow: "hidden", 
-              backgroundColor: "white",
-              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-            }}>
-              <img 
-                src={car.image_urls?.[0] || "/placeholder-car.jpg"} 
-                alt={car.model} 
-                style={{ width: "100%", height: "200px", objectFit: "cover" }} 
-              />
-              <div style={{ padding: "15px" }}>
-                <h3 style={{ margin: "0", textTransform: "uppercase" }}>{car.make} {car.model}</h3>
-                <p style={{ color: "#2563eb", fontWeight: "bold", fontSize: "1.2rem", margin: "10px 0" }}>
-                   Rs. {car.daily_rate?.toLocaleString()} <span style={{fontSize: '0.8rem', color: '#666'}}>/day</span>
-                </p>
-                <div style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                  {car.type} • {car.fuel_type} • {car.year}
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {/* ─── HERO ─── */}
+      <section className="hero">
+        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
 
-      {/* 3. Pagination Controls */}
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          {/* Previous Button */}
-          <Link 
-            href={`/?page=${currentPage - 1}`}
-            style={{ 
-              padding: "10px 20px", 
-              border: "1px solid #ddd", 
-              borderRadius: "8px",
-              pointerEvents: currentPage <= 1 ? "none" : "auto",
-              opacity: currentPage <= 1 ? 0.5 : 1,
-              textDecoration: "none",
-              color: "white"
-            }}
-          >
-            Previous
-          </Link>
-
-          {/* Page Numbers */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            Page <strong>{currentPage}</strong> of {totalPages}
+          <div className="hero-eyebrow">
+            🇱🇰 Sri Lanka's Vehicle Rental Platform
           </div>
 
-          {/* Next Button */}
-          <Link 
-            href={`/?page=${currentPage + 1}`}
-            style={{ 
-              padding: "10px 20px", 
-              border: "1px solid #ddd", 
-              borderRadius: "8px",
-              pointerEvents: currentPage >= totalPages ? "none" : "auto",
-              opacity: currentPage >= totalPages ? 0.5 : 1,
-              textDecoration: "none",
-              color: "white "
-            }}
-          >
-            Next
-          </Link>
+          <h1 className="hero-title">
+            Find Your Perfect<br />
+            <span className="accent">Rental Vehicle</span>
+          </h1>
+
+          <p className="hero-sub" style={{ margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
+            Browse hundreds of vehicles across all 25 districts.
+            Cars, vans, SUVs — with or without a driver.
+          </p>
+
+          {/* Search */}
+          <div style={{ maxWidth: '720px', margin: '0 auto var(--space-12)' }}>
+            <Search />
+          </div>
+
+          {/* Stats */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 'var(--space-8)',
+            flexWrap: 'wrap',
+          }}>
+            <div className="stat-pill">
+              <div className="stat-pill-value">{count?.toLocaleString()}+</div>
+              <div className="stat-pill-label">Vehicles Listed</div>
+            </div>
+            <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} />
+            <div className="stat-pill">
+              <div className="stat-pill-value">25</div>
+              <div className="stat-pill-label">Districts</div>
+            </div>
+            <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} />
+            <div className="stat-pill">
+              <div className="stat-pill-value">7</div>
+              <div className="stat-pill-label">Vehicle Types</div>
+            </div>
+          </div>
         </div>
-      )}
-      <br/>
-      <Footer/>
+      </section>
+
+      {/* ─── FEATURED VEHICLES ─── */}
+      <section style={{ padding: 'var(--space-16) 0' }}>
+        <div className="container">
+
+          {/* Section header */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 'var(--space-8)' }}>
+            <div>
+              <p className="label">Recently Added</p>
+              <h2 style={{ marginTop: 'var(--space-1)' }}>Latest Listings</h2>
+            </div>
+            <Link href="/explore" className="btn btn-ghost btn-sm">
+              View All {'→'}
+            </Link>
+          </div>
+
+          {/* Vehicle Grid */}
+          <div className="stagger" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 'var(--space-4)',
+          }}>
+            {vehicles?.map((car) => (
+              <Link
+                key={car.id}
+                href={`/explore/${car.id}`}
+                className="vehicle-card animate-fade-in"
+              >
+                {/* Image */}
+                <div style={{ position: 'relative', height: '180px', overflow: 'hidden', background: 'var(--bg-subtle)' }}>
+                  {car.image_urls?.[0] ? (
+                    <img
+                      src={car.image_urls[0]}
+                      alt={`${car.make} ${car.model}`}
+                      className="vehicle-card-image"
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%', height: '100%',
+                      display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: '2.5rem',
+                      color: 'var(--neutral-300)'
+                    }}>
+                      🚗
+                    </div>
+                  )}
+
+                  {/* Type badge */}
+                  <span className="badge badge-dark" style={{
+                    position: 'absolute', top: '10px', left: '10px',
+                    backdropFilter: 'blur(8px)',
+                  }}>
+                    {car.type}
+                  </span>
+
+                  {/* Driver badge */}
+                  {car.with_driver && (
+                    <span className="badge badge-red" style={{
+                      position: 'absolute', top: '10px', right: '10px',
+                    }}>
+                      👨‍✈️ Driver
+                    </span>
+                  )}
+                </div>
+
+                {/* Body */}
+                <div className="vehicle-card-body">
+                  <div className="vehicle-card-title">
+                    {car.make} {car.model}{' '}
+                    <span style={{ fontWeight: 400, color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                      ({car.year})
+                    </span>
+                  </div>
+                  <div className="vehicle-card-sub">📍 {car.district}</div>
+
+                  <div style={{
+                    marginTop: 'var(--space-3)',
+                    paddingTop: 'var(--space-3)',
+                    borderTop: '1px solid var(--border-default)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <div className="vehicle-card-price">
+                      Rs. {car.daily_rate?.toLocaleString()}
+                      <span>/day</span>
+                    </div>
+                    <span className="badge badge-gray">{car.fuel_type}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ textAlign: 'center', marginTop: 'var(--space-12)' }}>
+            <Link href="/explore" className="btn btn-primary btn-lg">
+              Browse All Vehicles 🚀
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      <Footer />
     </div>
-  );
+  )
 }

@@ -1,54 +1,52 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/utils/supabase'
 import { dynamicData, SriLankanDistricts } from '@/settings'
 
-const defaultForm = {
-  type:        dynamicData.vehicle_types[0] as string,
-  make:        '',
-  model:       '',
-  year:        '',
-  fuelType:    'Petrol',
-  dailyRate:   '',
-  weeklyRate:  '',
-  monthlyRate: '',
-  withDriver:  false,
-  district:    '',
-  latitude:    '',
-  longitude:   '',
-}
-
-export default function UploadVehiclePage() {
+export default function EditVehiclePage() {
+  const { id } = useParams()
   const router = useRouter()
-  const [form,       setForm]       = useState(defaultForm)
-  const [imageFiles, setImageFiles] = useState<File[]>([])
-  const [previews,   setPreviews]   = useState<string[]>([])
-  const [loading,    setLoading]    = useState(false)
-  const [gpsLoading, setGpsLoading] = useState(false)
-  const [gpsStatus,  setGpsStatus]  = useState<'idle' | 'set' | 'error'>('idle')
-  const [isVerified, setIsVerified] = useState<boolean | null>(null)
 
-  useEffect(() => {
-    async function checkVerification() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-      const { data } = await supabase
-        .from('profiles').select('is_verified').eq('id', user.id).single()
-      setIsVerified(data?.is_verified ?? false)
-    }
-    checkVerification()
-  }, [])
+  const [form, setForm] = useState({
+    type: '', make: '', model: '', year: '',
+    fuelType: '', dailyRate: '', weeklyRate: '', monthlyRate: '',
+    withDriver: false, district: '', latitude: '', longitude: '',
+  })
+  const [pageLoading, setPageLoading] = useState(true)
+  const [saving,      setSaving]      = useState(false)
+  const [gpsLoading,  setGpsLoading]  = useState(false)
+  const [gpsStatus,   setGpsStatus]   = useState<'idle' | 'set' | 'error'>('idle')
+  const [saved,       setSaved]       = useState(false)
 
-  const set = (field: keyof typeof defaultForm, value: string | boolean) =>
+  const set = (field: keyof typeof form, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [field]: value }))
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setImageFiles(files)
-    setPreviews(files.map((f) => URL.createObjectURL(f)))
-  }
+  useEffect(() => {
+    async function fetchVehicle() {
+      const { data, error } = await supabase
+        .from('uploaded_rent_vehicles').select('*').eq('id', id).single()
+      if (error) { alert('Error loading vehicle'); router.push('/seller/dashboard'); return }
+      setForm({
+        type:        data.type              || '',
+        make:        data.make              || '',
+        model:       data.model             || '',
+        year:        data.year?.toString()  || '',
+        fuelType:    data.fuel_type         || 'Petrol',
+        dailyRate:   data.daily_rate?.toString()   || '',
+        weeklyRate:  data.weekly_rate?.toString()  || '',
+        monthlyRate: data.monthly_rate?.toString() || '',
+        withDriver:  data.with_driver       ?? false,
+        district:    data.district          || '',
+        latitude:    data.latitude?.toString()  || '',
+        longitude:   data.longitude?.toString() || '',
+      })
+      if (data.latitude) setGpsStatus('set')
+      setPageLoading(false)
+    }
+    fetchVehicle()
+  }, [id])
 
   const handleGPS = () => {
     if (!navigator.geolocation) return alert('Geolocation not supported.')
@@ -64,50 +62,39 @@ export default function UploadVehiclePage() {
     )
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (imageFiles.length !== 4) return alert('Please select exactly 4 images.')
-    if (!form.district)           return alert('Please select your district.')
-    setLoading(true)
+    setSaving(true); setSaved(false)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Please log in first.')
-      const uploadedUrls: string[] = []
-      for (const file of imageFiles) {
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}`
-        const { error: upErr } = await supabase.storage.from('vehicle-images').upload(path, file)
-        if (upErr) throw upErr
-        const { data } = supabase.storage.from('vehicle-images').getPublicUrl(path)
-        uploadedUrls.push(data.publicUrl)
-      }
-      const { error } = await supabase.from('uploaded_rent_vehicles').insert([{
-        type:         form.type,
-        make:         form.make,
-        model:        form.model,
-        year:         parseInt(form.year),
-        seller_id:    user.id,
-        image_urls:   uploadedUrls,
-        fuel_type:    form.fuelType,
-        daily_rate:   parseFloat(form.dailyRate),
-        weekly_rate:  form.weeklyRate  ? parseFloat(form.weeklyRate)  : null,
-        monthly_rate: form.monthlyRate ? parseFloat(form.monthlyRate) : null,
-        with_driver:  form.withDriver,
-        district:     form.district,
-        latitude:     form.latitude  || null,
-        longitude:    form.longitude || null,
-      }])
+      const { error } = await supabase
+        .from('uploaded_rent_vehicles')
+        .update({
+          type:         form.type,
+          make:         form.make,
+          model:        form.model,
+          year:         parseInt(form.year),
+          fuel_type:    form.fuelType,
+          daily_rate:   parseFloat(form.dailyRate),
+          weekly_rate:  form.weeklyRate  ? parseFloat(form.weeklyRate)  : null,
+          monthly_rate: form.monthlyRate ? parseFloat(form.monthlyRate) : null,
+          with_driver:  form.withDriver,
+          district:     form.district,
+          latitude:     form.latitude  || null,
+          longitude:    form.longitude || null,
+        })
+        .eq('id', id)
       if (error) throw error
-      alert('Vehicle uploaded successfully!')
-      router.push('/seller/dashboard')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
       alert(err.message)
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  // ─── Checking state ───
-  if (isVerified === null) return (
+  // ─── Loading ───
+  if (pageLoading) return (
     <div className="page" style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{
@@ -117,39 +104,7 @@ export default function UploadVehiclePage() {
           animation: 'spin 0.8s linear infinite',
           margin: '0 auto var(--space-4)',
         }} />
-        <p className="label">Checking account status...</p>
-      </div>
-    </div>
-  )
-
-  // ─── Not verified gate ───
-  if (isVerified === false) return (
-    <div className="page" style={{
-      display: 'grid', placeItems: 'center',
-      minHeight: '100vh', padding: 'var(--space-6)',
-    }}>
-      <div className="card animate-fade-in-scale" style={{
-        maxWidth: '380px', width: '100%',
-        padding: 'var(--space-8)', textAlign: 'center',
-        borderColor: 'var(--color-warning-border)',
-      }}>
-        <p style={{ fontSize: '3rem', marginBottom: 'var(--space-4)' }}>🔒</p>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>
-          Verification Required
-        </h2>
-        <p style={{
-          fontSize: '0.875rem', color: 'var(--text-tertiary)',
-          marginBottom: 'var(--space-6)', lineHeight: 1.6,
-        }}>
-          You need to verify your account before listing vehicles.
-          Add your phone number to get verified instantly.
-        </p>
-        <button
-          onClick={() => router.push('/seller/profile/edit')}
-          className="btn btn-primary btn-full"
-        >
-          👤 Complete Profile & Verify
-        </button>
+        <p className="label">Loading vehicle data...</p>
       </div>
     </div>
   )
@@ -159,23 +114,82 @@ export default function UploadVehiclePage() {
       <div className="container-sm" style={{ paddingTop: 'var(--space-8)' }}>
 
         {/* ─── Header ─── */}
-        <div style={{ marginBottom: 'var(--space-8)' }}>
-          <h1 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>🚗 List a New Vehicle</h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
-            Fill in the details to list your vehicle for rent
-          </p>
+        <div style={{
+          display: 'flex', alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: 'var(--space-8)',
+          gap: 'var(--space-4)',
+        }}>
+          <div>
+            <h1 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>✏️ Edit Vehicle</h1>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
+              {form.make} {form.model} {form.year && `(${form.year})`}
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/seller/dashboard')}
+            className="btn btn-ghost btn-sm"
+            style={{ flexShrink: 0 }}
+          >
+            {'←'} Dashboard
+          </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}
+        {/* ─── Manage Images CTA ─── */}
+        <button
+          onClick={() => router.push(`/seller/vehicles/edit/images/${id}`)}
+          style={{
+            width: '100%',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--bg-card)',
+            border: '2px dashed var(--border-default)',
+            borderRadius: 'var(--radius-xl)',
+            padding: 'var(--space-4) var(--space-5)',
+            marginBottom: 'var(--space-6)',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-primary)'
+            e.currentTarget.style.background  = 'var(--color-primary-light)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border-default)'
+            e.currentTarget.style.background  = 'var(--bg-card)'
+          }}
         >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <span style={{ fontSize: '1.5rem' }}>🖼️</span>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Manage Vehicle Images
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+                Replace or delete individual photos
+              </p>
+            </div>
+          </div>
+          <span style={{ color: 'var(--text-tertiary)', fontWeight: 700, fontSize: '1.1rem' }}>
+            {'→'}
+          </span>
+        </button>
+
+        {/* ─── Success toast ─── */}
+        {saved && (
+          <div className="alert alert-success animate-fade-in" style={{ marginBottom: 'var(--space-5)' }}>
+            ✅ Vehicle details saved successfully!
+          </div>
+        )}
+
+        <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
 
           {/* ─── SECTION 1: Vehicle Details ─── */}
           <div className="section-card">
             <p className="section-card-title">🔧 Vehicle Details</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
 
+              {/* Type — full width */}
               <div style={{ gridColumn: '1 / -1' }}>
                 <label className="form-label">Vehicle Type</label>
                 <select
@@ -282,7 +296,7 @@ export default function UploadVehiclePage() {
                   👨‍✈️ Vehicle includes a driver
                 </p>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>
-                  Check this if a driver is provided with the rental
+                  Toggle if driver availability has changed
                 </p>
               </div>
             </div>
@@ -323,7 +337,7 @@ export default function UploadVehiclePage() {
                   {gpsLoading
                     ? '⏳ Accessing GPS...'
                     : gpsStatus === 'set'
-                      ? `✅ Location Set — ${form.latitude}, ${form.longitude}`
+                      ? `✅ ${form.latitude}, ${form.longitude} — Click to update`
                       : gpsStatus === 'error'
                         ? '❌ GPS Failed — Try Again'
                         : '🎯 Use My Current Location'}
@@ -332,80 +346,13 @@ export default function UploadVehiclePage() {
             </div>
           </div>
 
-          {/* ─── SECTION 4: Images ─── */}
-          <div className="section-card">
-            <p className="section-card-title">🖼️ Vehicle Images</p>
-            <p style={{
-              fontSize: '0.78rem', color: 'var(--text-tertiary)',
-              marginBottom: 'var(--space-3)',
-            }}>
-              Select exactly 4 images. The first image will be the cover photo shown in listings.
-            </p>
-
-            {/* Drop zone */}
-            <label className={`dropzone ${imageFiles.length === 4 ? 'complete' : ''}`}>
-              <input
-                type="file" accept="image/*"
-                multiple onChange={handleFiles}
-                style={{ display: 'none' }}
-              />
-              <p style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>
-                {imageFiles.length === 4 ? '✅' : '📷'}
-              </p>
-              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {imageFiles.length === 0
-                  ? 'Click to select 4 images'
-                  : `${imageFiles.length} / 4 selected`}
-              </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                JPG, PNG, WEBP supported
-              </p>
-            </label>
-
-            {/* Previews */}
-            {previews.length > 0 && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 'var(--space-2)',
-                marginTop: 'var(--space-3)',
-              }}>
-                {previews.map((src, i) => (
-                  <div key={i} style={{
-                    position: 'relative',
-                    aspectRatio: '1',
-                    borderRadius: 'var(--radius-lg)',
-                    overflow: 'hidden',
-                    border: i === 0
-                      ? '2px solid var(--color-primary)'
-                      : '1px solid var(--border-default)',
-                  }}>
-                    <img
-                      src={src}
-                      alt={`Preview ${i + 1}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    {/* Cover badge */}
-                    {i === 0 && (
-                      <span className="badge badge-red" style={{
-                        position: 'absolute', bottom: '6px', left: '6px',
-                      }}>
-                        ★ Cover
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* ─── Submit ─── */}
           <button
             type="submit"
-            disabled={loading || imageFiles.length !== 4}
+            disabled={saving}
             className="btn btn-primary btn-full btn-lg"
           >
-            {loading ? '⏳ Uploading Vehicle...' : '🚀 List Vehicle for Rent'}
+            {saving ? '⏳ Saving Changes...' : '💾 Save Changes'}
           </button>
 
         </form>
