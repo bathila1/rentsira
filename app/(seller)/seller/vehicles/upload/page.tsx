@@ -201,13 +201,30 @@ export default function UploadVehiclePage() {
     <div className="page" style={{ paddingBottom: "var(--space-16)" }}>
       <div className="container-sm" style={{ paddingTop: "var(--space-8)" }}>
         {/* ─── Header ─── */}
-        <div style={{ marginBottom: "var(--space-8)" }}>
-          <h1 style={{ fontSize: "1.6rem", marginBottom: "4px" }}>
-            🚗 List a New Vehicle
-          </h1>
-          <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
-            Fill in the details to list your vehicle for rent
-          </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            marginBottom: "var(--space-8)",
+            gap: "var(--space-4)",
+          }}
+        >
+          <div style={{ marginBottom: "var(--space-8)" }}>
+            <h1 style={{ fontSize: "1.6rem", marginBottom: "4px" }}>
+              🚗 Add a New Vehicle
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
+              Fill in the details to list your vehicle for rent
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/seller/dashboard")}
+            className="btn btn-ghost btn-sm"
+            style={{ flexShrink: 0 }}
+          >
+            {"←"} Dashboard
+          </button>
         </div>
 
         <form
@@ -626,7 +643,7 @@ export default function UploadVehiclePage() {
             disabled={loading || imageFiles.length !== 4}
             className="btn btn-primary btn-full btn-lg"
           >
-            {loading ? "⏳ Uploading Vehicle..." : "🚀 List Vehicle for Rent"}
+            {loading ? "⏳ Uploading Vehicle..." : "🚀 Submit Vehicle"}
           </button>
         </form>
       </div>

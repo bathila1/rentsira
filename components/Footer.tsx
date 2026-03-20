@@ -28,7 +28,7 @@ const Footer = () => {
               marginBottom: 'var(--space-2)',
               fontSize: '1.3rem'
             }}>
-              SI<span>RA</span>
+              {settingsData.LogoTextFirstPart}<span>{settingsData.LogoTextLastPart}</span>
             </div>
             <p style={{
               fontSize: '0.83rem',

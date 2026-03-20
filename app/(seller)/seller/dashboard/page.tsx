@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/utils/supabase'
 import BumpModal from '../components/BumpModal'
+import { settingsData } from '@/settings'
 
 const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_PAGINATION_PAGE_COUNT_SELLER_UPLOADED) || 5
 
@@ -115,7 +116,7 @@ export default function Dashboard() {
 
           {/* Brand */}
           <Link href="/" className="nav-brand" style={{ textDecoration: 'none' }}>
-            SI<span>RA</span>
+           {settingsData.LogoTextFirstPart}<span>{settingsData.LogoTextLastPart}</span>
           </Link>
 
           {/* Right side */}
@@ -202,7 +203,7 @@ export default function Dashboard() {
               ✏️ Edit Profile
             </Link>
             <Link href="/seller/vehicles/upload" className="btn btn-primary btn-sm">
-              + List Vehicle
+              + Add Vehicle
             </Link>
           </div>
         </div>
@@ -228,7 +229,7 @@ export default function Dashboard() {
             <p className="empty-state-title">No vehicles listed yet</p>
             <p className="empty-state-sub">Add your first vehicle to start renting</p>
             <Link href="/seller/vehicles/upload" className="btn btn-primary">
-              + List a Vehicle
+              + Add a Vehicle
             </Link>
           </div>
 

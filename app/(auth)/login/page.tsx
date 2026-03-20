@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/utils/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { settingsData } from '@/settings'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,7 +34,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="auth-logo">
-          SI<span>RA</span>
+          {settingsData.LogoTextFirstPart}<span>{settingsData.LogoTextLastPart}</span>
         </div>
 
         {/* Title */}

@@ -160,9 +160,9 @@ export default function UploadVehiclePage() {
 
         {/* ─── Header ─── */}
         <div style={{ marginBottom: 'var(--space-8)' }}>
-          <h1 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>🚗 List a New Vehicle</h1>
+          <h1 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>🚗 Add a New Vehicle</h1>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
-            Fill in the details to list your vehicle for rent
+            Fill in the details to add your vehicle for rent
           </p>
         </div>
 
@@ -405,7 +405,7 @@ export default function UploadVehiclePage() {
             disabled={loading || imageFiles.length !== 4}
             className="btn btn-primary btn-full btn-lg"
           >
-            {loading ? '⏳ Uploading Vehicle...' : '🚀 List Vehicle for Rent'}
+            {loading ? '⏳ Uploading Vehicle...' : '🚀 Add Vehicle for Rent'}
           </button>
 
         </form>

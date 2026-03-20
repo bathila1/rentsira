@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Search from '@/components/Search'
+import { settingsData } from '@/settings'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -10,7 +11,7 @@ export default async function Home() {
   const { data: vehicles, count } = await supabase
     .from('uploaded_rent_vehicles')
     .select('*', { count: 'exact' })
-    .order('id', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(8)
 
   return (
@@ -31,8 +32,7 @@ export default async function Home() {
           </h1>
 
           <p className="hero-sub" style={{ margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-            Browse hundreds of vehicles across all 25 districts.
-            Cars, vans, SUVs — with or without a driver.
+            {settingsData.FrontPageMainSmallText}
           </p>
 
           {/* Search */}
@@ -52,16 +52,17 @@ export default async function Home() {
               <div className="stat-pill-value">{count?.toLocaleString()}+</div>
               <div className="stat-pill-label">Vehicles Listed</div>
             </div>
-            <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} />
+
+            {/* <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} /> 
             <div className="stat-pill">
               <div className="stat-pill-value">25</div>
               <div className="stat-pill-label">Districts</div>
-            </div>
-            <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} />
-            <div className="stat-pill">
+            </div> */}
+            {/* <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} /> */}
+            {/* <div className="stat-pill">
               <div className="stat-pill-value">7</div>
               <div className="stat-pill-label">Vehicle Types</div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

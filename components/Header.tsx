@@ -1,3 +1,4 @@
+import { settingsData } from '@/settings'
 import Link from 'next/link'
 
 const Header = () => {
@@ -7,16 +8,16 @@ const Header = () => {
 
         {/* Brand */}
         <Link href="/" className="nav-brand" style={{ textDecoration: 'none' }}>
-          SI<span>RA</span>
+          {settingsData.LogoTextFirstPart}<span>{settingsData.LogoTextLastPart}</span>
         </Link>
 
         {/* Nav links */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <Link href="/explore" className="btn btn-ghost btn-sm">
-            Browse Vehicles
+            Search
           </Link>
           <Link href="/check" className="btn btn-primary btn-sm">
-            List Your Vehicle
+            Post Free
           </Link>
         </nav>
 

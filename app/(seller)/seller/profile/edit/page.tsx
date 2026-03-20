@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase'
+import { settingsData } from '@/settings'
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -78,7 +79,7 @@ export default function EditProfilePage() {
       {/* ─── NAV ─── */}
       <header className="nav">
         <div className="container nav-inner">
-          <span className="nav-brand">SI<span>RA</span></span>
+          <span className="nav-brand">{settingsData.LogoTextFirstPart}<span>{settingsData.LogoTextLastPart}</span></span>
           <button
             onClick={() => router.push('/seller/dashboard')}
             className="btn btn-ghost btn-sm"
