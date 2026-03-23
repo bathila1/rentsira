@@ -7,7 +7,7 @@ import { supabase } from '@/utils/supabase'
 import BumpModal from '../components/BumpModal'
 import { settingsData } from '@/settings'
 
-const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_PAGINATION_PAGE_COUNT_SELLER_UPLOADED) || 5
+const PAGE_SIZE = settingsData.vehiclesPerPage || 5
 
 export default function Dashboard() {
   const router = useRouter()

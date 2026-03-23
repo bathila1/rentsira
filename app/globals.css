@@ -1,5 +1,5 @@
 /* ============================================================
-   SIRA — Global Theme System
+   SIRAA — Global Theme System
    Premium Crimson Minimalist
    ============================================================ */
 
@@ -1074,4 +1074,23 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
 /* Sticky call bar — desktop hidden */
 @media (min-width: 1024px) {
   .sticky-call-bar { display: none !important; }
+}
+
+/* Contact info card */
+.contact-info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-xs);
+  text-decoration: none;
+  display: block;
+}
+
+.contact-info-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }

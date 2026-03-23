@@ -6,16 +6,31 @@ const settingsData = {
   FooterText: "Developed with ❤️ by Bathila",
   WebDescription: "",
   WebKeywords: "",
-  FrontPageMainSmallText: "Rent a vehicle? Wedding Hire? For a DayTrip? Cars,Vans,SUVs,Buses (with or without a driver).",
+  FrontPageMainSmallText:
+    "Rent a vehicle? Wedding Hire? For a DayTrip? Cars,Vans,SUVs,Buses (with or without a driver).",
   LogoTextFirstPart: "SI",
   LogoTextLastPart: "RAA",
+  supportMail: "bathi.solutions@gmail.com",
+  phone1: "076 47 900 33",
+  phone2: "94764790033",
+  SupportWhatsappNumber: "+94764790033",
+  vehiclesPerPage: 10,
 };
-  
+
 const dynamicData = {
-  vehicle_types:[
-    'Car', 'Van', 'Bike', 'Truck', 'Bus', '3wheel', 'Lorry', 'Trailer', 'Wedding Hire', 'Other'
-  ]
-}
+  vehicle_types: [
+    "Car",
+    "Van",
+    "Bike",
+    "Truck",
+    "Bus",
+    "3wheel",
+    "Lorry",
+    "Trailer",
+    "Wedding Hire",
+    "Other",
+  ],
+};
 
 const SriLankanDistricts = [
   "Ampara",
@@ -42,7 +57,7 @@ const SriLankanDistricts = [
   "Puttalam",
   "Ratnapura",
   "Trincomalee",
-  "Vavuniya"
+  "Vavuniya",
 ];
 
 export { settingsData, dynamicData, SriLankanDistricts };

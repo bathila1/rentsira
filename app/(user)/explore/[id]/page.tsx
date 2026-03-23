@@ -6,21 +6,70 @@ import Footer from "@/components/Footer";
 import ImageGallery from "./components/ImageGallery";
 import StickyCallBar from "./components/StickyCallBar";
 import { settingsData } from "@/settings";
+import type { Metadata } from "next";
 
-const SiteDomain = settingsData.SiteDomain
+const SiteDomain = settingsData.SiteDomain;
 // Normalizes any Sri Lankan phone format to WhatsApp-ready international format
 function toWAPhone(phone: string): string {
   // Remove everything except digits
-  let digits = phone.replace(/\D/g, '')
+  let digits = phone.replace(/\D/g, "");
 
   // Remove leading 0  → 0771234567 becomes 771234567
-  if (digits.startsWith('0')) digits = digits.slice(1)
+  if (digits.startsWith("0")) digits = digits.slice(1);
 
   // Remove leading 94 then re-add → prevents 9494...
-  if (digits.startsWith('94')) digits = digits.slice(2)
+  if (digits.startsWith("94")) digits = digits.slice(2);
 
   // Always prefix with Sri Lanka country code
-  return `94${digits}`
+  return `94${digits}`;
+}
+
+// ─── Dynamic metadata per vehicle ───
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const supabase = await createClient();
+  const { id } = await params;
+
+  const { data: vehicle } = await supabase
+    .from("uploaded_rent_vehicles")
+    .select(
+      "make, model, year, district, daily_rate, fuel_type, with_driver, image_urls",
+    )
+    .eq("id", id)
+    .single();
+
+  if (!vehicle)
+    return {
+      title: "Vehicle Not Found | SIRAA",
+    };
+
+  const title = `${vehicle.make} ${vehicle.model} (${vehicle.year}) for Rent in ${vehicle.district}`;
+  const description = `Rent a ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()}/day. ${vehicle.with_driver ? "Driver included." : "Self drive."} ${vehicle.fuel_type}. Book now on SIRAA.`;
+  const image = vehicle.image_urls?.[0] || `${SiteDomain}/og-default.jpg`;
+
+  return {
+    title,
+    description,
+
+    // ─── Open Graph (WhatsApp, Facebook previews) ───
+    openGraph: {
+      title,
+      description,
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: "website",
+    },
+
+    // ─── Twitter card ───
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 export default async function VehicleDetailPage({
   params,
@@ -434,49 +483,102 @@ export default async function VehicleDetailPage({
         {vehicle.latitude && vehicle.longitude && (
           <div
             className="section-card"
-            style={{ marginTop: "var(--space-10)" }}
+            style={{ marginTop: "var(--space-10)", overflow: "hidden" }}
           >
-            <p className="section-card-title">🗺️ Approximate Location</p>
-            <a
-              href={`https://www.google.com/maps?q=${vehicle.latitude},${vehicle.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="map-link"
+            {/* Header row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "var(--space-4)",
+              }}
             >
-              <span style={{ fontSize: "1.8rem" }}>📍</span>
+              <p className="section-card-title" style={{ margin: 0 }}>
+                🗺️ Approximate Location
+              </p>
+              <span className="badge badge-gray">📍 {vehicle.district}</span>
+            </div>
+
+            {/* Map preview — static Google Maps embed */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "220px",
+                borderRadius: "var(--radius-xl)",
+                overflow: "hidden",
+                border: "1px solid var(--border-default)",
+                marginBottom: "var(--space-4)",
+                background: "var(--bg-subtle)",
+              }}
+            >
+              <iframe
+                src={`https://maps.google.com/maps?q=${vehicle.latitude},${vehicle.longitude}&z=14&output=embed`}
+                width="100%"
+                height="100%"
+                style={{ border: "none", display: "block" }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Vehicle location map"
+              />
+
+              {/* Overlay gradient at bottom */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: "60px",
+                  background:
+                    "linear-gradient(to top, rgba(255,255,255,0.9), transparent)",
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
+
+            {/* Info + CTA row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "var(--space-3)",
+              }}
+            >
               <div>
                 <p
-                  className="map-link-title"
                   style={{
-                    fontSize: "0.9rem",
-                    fontWeight: 700,
+                    fontSize: "0.83rem",
+                    fontWeight: 600,
                     color: "var(--text-primary)",
                     fontFamily: "var(--font-display)",
-                    transition: "var(--transition-fast)",
+                    marginBottom: "3px",
                   }}
                 >
-                  View on Google Maps
+                  {vehicle.district}, Sri Lanka
                 </p>
                 <p
-                  style={{
-                    fontSize: "0.78rem",
-                    color: "var(--text-tertiary)",
-                    marginTop: "3px",
-                  }}
+                  style={{ fontSize: "0.75rem", color: "var(--text-tertiary)" }}
                 >
-                  {vehicle.latitude.toFixed(4)}, {vehicle.longitude.toFixed(4)}
+                  {vehicle.latitude.toFixed(4)}° N,{" "}
+                  {vehicle.longitude.toFixed(4)}° E &nbsp;·&nbsp; Approximate
+                  area shown
                 </p>
               </div>
-              <span
-                style={{
-                  marginLeft: "auto",
-                  color: "var(--text-tertiary)",
-                  fontSize: "1.1rem",
-                }}
+
+              <a
+                href={`https://www.google.com/maps?q=${vehicle.latitude},${vehicle.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary btn-sm"
+                style={{ textDecoration: "none", flexShrink: 0 }}
               >
-                {"→"}
-              </span>
-            </a>
+                Open in Maps ↗
+              </a>
+            </div>
           </div>
         )}
       </main>

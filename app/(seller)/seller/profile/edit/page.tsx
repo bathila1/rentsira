@@ -206,7 +206,7 @@ export default function EditProfilePage() {
               <input
                 value={form.full_name}
                 onChange={(e) => set('full_name', e.target.value)}
-                placeholder="e.g. Bathila Perera"
+                placeholder="e.g. Name?"
                 className="input"
               />
             </div>

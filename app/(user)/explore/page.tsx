@@ -5,6 +5,13 @@ import Pagination from './components/Pagination'
 import { Suspense } from 'react'
 import Header from '@/components/Header'
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Explore Vehicles',
+  description: 'Search and filter vehicles for rent across Sri Lanka. Find cars, vans, SUVs and more.',
+}
+
 const ITEMS_PER_PAGE = 12
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

@@ -5,6 +5,13 @@ import Footer from '@/components/Footer'
 import Search from '@/components/Search'
 import { settingsData } from '@/settings'
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'SIRAA — Vehicle Rental Platform Sri Lanka',
+  description: 'Browse hundreds of vehicles for rent across all 25 districts. Cars, vans, SUVs — with or without a driver.',
+}
+
 export default async function Home() {
   const supabase = await createClient()
 

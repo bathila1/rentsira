@@ -57,8 +57,8 @@ const Footer = () => {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 <Link href="/explore"  className="footer-link">Browse Vehicles</Link>
-                <Link href="/check"    className="footer-link">List Your Vehicle</Link>
-                <Link href="/seller/dashboard" className="footer-link">Seller Dashboard</Link>
+                <Link href="/login"    className="footer-link">Add Your Vehicle</Link>
+                <Link href="/contact" className="footer-link">Contact Us</Link>
               </div>
             </div>
           </div>

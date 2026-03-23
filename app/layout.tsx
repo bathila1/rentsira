@@ -1,36 +1,26 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from 'next'
 import './globals.css'
-import {settingsData} from "@/settings";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: settingsData.WebTitle,
-  description: settingsData.WebDescription,
-  keywords: settingsData.WebKeywords,
-};
+  title: {
+    default: 'SIRAA — Vehicle Rental Platform Sri Lanka',
+    template: '%s | SIRAA',   // ← "Toyota Premio | SIRAA"
+  },
+  description: 'Find and rent cars, vans, SUVs and more across all 25 districts in Sri Lanka. With or without driver.',
+  keywords: ['vehicle rental', 'car rent', 'Sri Lanka', 'rent a car', 'van hire'],
+  openGraph: {
+    siteName: 'SIRAA',
+    locale: 'en_LK',
+    type: 'website',
+  },
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body>
         {children}
       </body>
     </html>
-  );
+  )
 }

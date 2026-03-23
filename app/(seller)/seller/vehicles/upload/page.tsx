@@ -23,12 +23,20 @@ const defaultForm = {
 export default function UploadVehiclePage() {
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "set" | "error">("idle");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
+
+  // With this — 4 fixed slots:
+  const [slots, setSlots] = useState<(File | null)[]>([null, null, null, null]);
+  const [previews, setPreviews] = useState<(string | null)[]>([
+    null,
+    null,
+    null,
+    null,
+  ]);
 
   useEffect(() => {
     async function checkVerification() {
@@ -52,11 +60,41 @@ export default function UploadVehiclePage() {
   const set = (field: keyof typeof defaultForm, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setImageFiles(files);
-    setPreviews(files.map((f) => URL.createObjectURL(f)));
+  const handleSlotSelect = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const newSlots = [...slots];
+    const newPreviews = [...previews];
+
+    // Revoke old URL if replacing
+    if (newPreviews[index]) URL.revokeObjectURL(newPreviews[index]!);
+
+    newSlots[index] = file;
+    newPreviews[index] = URL.createObjectURL(file);
+
+    setSlots(newSlots);
+    setPreviews(newPreviews);
   };
+
+  const handleSlotRemove = (index: number) => {
+    const newSlots = [...slots];
+    const newPreviews = [...previews];
+
+    if (newPreviews[index]) URL.revokeObjectURL(newPreviews[index]!);
+
+    newSlots[index] = null;
+    newPreviews[index] = null;
+
+    setSlots(newSlots);
+    setPreviews(newPreviews);
+  };
+
+  const filledCount = slots.filter(Boolean).length;
+  const allFilled = filledCount === 4;
 
   const handleGPS = () => {
     if (!navigator.geolocation) return alert("Geolocation not supported.");
@@ -77,8 +115,7 @@ export default function UploadVehiclePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (imageFiles.length !== 4)
-      return alert("Please select exactly 4 images.");
+    if (!allFilled) return alert("Please add all 4 photos.");
     if (!form.district) return alert("Please select your district.");
     setLoading(true);
     try {
@@ -87,7 +124,8 @@ export default function UploadVehiclePage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Please log in first.");
       const uploadedUrls: string[] = [];
-      for (const file of imageFiles) {
+      for (const file of slots) {
+        if (!file) continue;
         const path = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}`;
         const { error: upErr } = await supabase.storage
           .from("vehicle-images")
@@ -456,191 +494,291 @@ export default function UploadVehiclePage() {
 
           {/* ─── SECTION 4: Images ─── */}
           <div className="section-card">
-            <p className="section-card-title">🖼️ Vehicle Images</p>
-            <p
+            <p className="section-card-title">🖼️ Vehicle Photos</p>
+
+            {/* Progress indicator */}
+            <div
               style={{
-                fontSize: "0.78rem",
-                color: "var(--text-tertiary)",
-                marginBottom: "var(--space-3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "var(--space-4)",
               }}
             >
-              Select exactly 4 images. The first image will be the cover photo
-              shown in listings.
-            </p>
-
-            {/* Drop zone */}
-            <label
-              style={{
-                display: "block",
-                width: "100%",
-                border:
-                  imageFiles.length === 4
-                    ? "2px solid var(--color-success)"
-                    : "2px dashed var(--border-strong)",
-                borderRadius: "var(--radius-xl)",
-                padding: "var(--space-8) var(--space-4)",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "var(--transition-normal)",
-                background:
-                  imageFiles.length === 4
-                    ? "var(--color-success-light)"
-                    : "var(--bg-subtle)",
-                boxSizing: "border-box",
-              }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFiles}
-                style={{ display: "none" }}
-              />
-
-              {/* Icon */}
-              <div
-                style={{
-                  width: "52px",
-                  height: "52px",
-                  borderRadius: "50%",
-                  background:
-                    imageFiles.length === 4
-                      ? "var(--color-success-light)"
-                      : "var(--bg-card)",
-                  border: "1.5px solid var(--border-default)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto var(--space-3)",
-                  fontSize: "1.4rem",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                {imageFiles.length === 4 ? "✅" : "📷"}
-              </div>
-
-              {/* Text */}
               <p
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: 700,
-                  color: "var(--text-primary)",
-                  fontFamily: "var(--font-display)",
-                  letterSpacing: "-0.01em",
-                }}
+                style={{ fontSize: "0.83rem", color: "var(--text-secondary)" }}
               >
-                {imageFiles.length === 0
-                  ? "Click to select photos"
-                  : imageFiles.length === 4
-                    ? "4 photos selected ✓"
-                    : `${imageFiles.length} of 4 selected`}
+                {filledCount === 0 && "Add 4 photos of your vehicle"}
+                {filledCount > 0 &&
+                  filledCount < 4 &&
+                  `${4 - filledCount} more photo${4 - filledCount > 1 ? "s" : ""} needed`}
+                {allFilled && "✅ All photos added — ready to submit!"}
               </p>
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--text-tertiary)",
-                  marginTop: "4px",
-                }}
-              >
-                JPG, PNG, WEBP • Exactly 4 required
-              </p>
-
-              {/* Progress dots */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "var(--space-2)",
-                  marginTop: "var(--space-4)",
-                }}
-              >
+              {/* Progress pills */}
+              <div style={{ display: "flex", gap: "4px" }}>
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
                     style={{
-                      width: "28px",
+                      width: "20px",
                       height: "4px",
                       borderRadius: "var(--radius-full)",
-                      background:
-                        i < imageFiles.length
-                          ? "var(--color-primary)"
-                          : "var(--border-default)",
+                      background: slots[i]
+                        ? "var(--color-primary)"
+                        : "var(--border-default)",
                       transition: "var(--transition-normal)",
                     }}
                   />
                 ))}
               </div>
-            </label>
+            </div>
 
-            {/* Previews */}
-            {previews.length > 0 && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: "var(--space-2)",
-                  marginTop: "var(--space-4)",
-                }}
-              >
-                {previews.map((src, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      position: "relative",
-                      aspectRatio: "1",
-                      borderRadius: "var(--radius-lg)",
-                      overflow: "hidden",
-                      border:
-                        i === 0
-                          ? "2px solid var(--color-primary)"
-                          : "1.5px solid var(--border-default)",
-                      boxShadow: "var(--shadow-xs)",
-                    }}
-                  >
-                    <img
-                      src={src}
-                      alt={`Preview ${i + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    {i === 0 && (
-                      <span
-                        className="badge badge-red"
+            {/* 4 Slots Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "var(--space-3)",
+              }}
+            >
+              {[0, 1, 2, 3].map((i) => {
+                const hasPhoto = !!slots[i];
+                const preview = previews[i];
+                const isCover = i === 0;
+
+                return (
+                  <div key={i} style={{ position: "relative" }}>
+                    {hasPhoto ? (
+                      // ── Filled slot ──
+                      <div
                         style={{
-                          position: "absolute",
-                          bottom: "6px",
-                          left: "6px",
+                          position: "relative",
+                          aspectRatio: "4/3",
+                          borderRadius: "var(--radius-xl)",
+                          overflow: "hidden",
+                          border: isCover
+                            ? "2px solid var(--color-primary)"
+                            : "2px solid var(--color-success)",
+                          boxShadow: "var(--shadow-sm)",
                         }}
                       >
-                        ★ Cover
-                      </span>
-                    )}
-                    {i !== 0 && (
-                      <span
-                        className="badge badge-dark"
+                        <img
+                          src={preview!}
+                          alt={`Photo ${i + 1}`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+
+                        {/* Overlay on hover — shows actions */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            background: "rgb(0 0 0 / 0.45)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "var(--space-2)",
+                            opacity: 0,
+                            transition: "opacity 0.2s ease",
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.opacity = "1")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.opacity = "0")
+                          }
+                        >
+                          {/* Replace button */}
+                          <label
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              background: "white",
+                              color: "var(--neutral-900)",
+                              borderRadius: "var(--radius-full)",
+                              padding: "6px 14px",
+                              fontSize: "0.78rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontFamily: "var(--font-body)",
+                            }}
+                          >
+                            <input
+                              type="file"
+                              accept="image/*"
+                              hidden
+                              onChange={(e) => handleSlotSelect(i, e)}
+                            />
+                            🔄 Replace
+                          </label>
+
+                          {/* Remove button */}
+                          <button
+                            type="button"
+                            onClick={() => handleSlotRemove(i)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              background: "rgb(239 68 68)",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "var(--radius-full)",
+                              padding: "6px 14px",
+                              fontSize: "0.78rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontFamily: "var(--font-body)",
+                            }}
+                          >
+                            🗑️ Remove
+                          </button>
+                        </div>
+
+                        {/* Badge */}
+                        <span
+                          className={`badge ${isCover ? "badge-red" : "badge-green"}`}
+                          style={{
+                            position: "absolute",
+                            top: "8px",
+                            left: "8px",
+                          }}
+                        >
+                          {isCover ? "★ Cover" : `Photo ${i + 1}`}
+                        </span>
+
+                        {/* Mobile remove button (always visible) */}
+                        <button
+                          type="button"
+                          onClick={() => handleSlotRemove(i)}
+                          style={{
+                            position: "absolute",
+                            top: "6px",
+                            right: "6px",
+                            width: "26px",
+                            height: "26px",
+                            borderRadius: "50%",
+                            background: "rgb(0 0 0 / 0.6)",
+                            border: "none",
+                            color: "white",
+                            fontSize: "0.7rem",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 800,
+                            lineHeight: 1,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      // ── Empty slot ──
+                      <label
                         style={{
-                          position: "absolute",
-                          bottom: "6px",
-                          left: "6px",
-                          backdropFilter: "blur(4px)",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          aspectRatio: "4/3",
+                          borderRadius: "var(--radius-xl)",
+                          border: "2px dashed var(--border-default)",
+                          background: "var(--bg-subtle)",
+                          cursor: "pointer",
+                          transition: "var(--transition-fast)",
+                          gap: "var(--space-2)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor =
+                            "var(--color-primary)";
+                          e.currentTarget.style.background =
+                            "var(--color-primary-light)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor =
+                            "var(--border-default)";
+                          e.currentTarget.style.background = "var(--bg-subtle)";
                         }}
                       >
-                        {i + 1}
-                      </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(e) => handleSlotSelect(i, e)}
+                        />
+
+                        {/* Plus icon */}
+                        <div
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            background: "var(--bg-card)",
+                            border: "1.5px solid var(--border-default)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.2rem",
+                            boxShadow: "var(--shadow-xs)",
+                          }}
+                        >
+                          📷
+                        </div>
+
+                        <div style={{ textAlign: "center" }}>
+                          <p
+                            style={{
+                              fontSize: "0.8rem",
+                              fontWeight: 700,
+                              color: "var(--text-secondary)",
+                              fontFamily: "var(--font-display)",
+                            }}
+                          >
+                            {isCover ? "Add Cover Photo" : `Add Photo ${i + 1}`}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "var(--text-tertiary)",
+                              marginTop: "2px",
+                            }}
+                          >
+                            {isCover ? "Shown in listings" : "Tap to select"}
+                          </p>
+                        </div>
+                      </label>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
+
+            {/* Help text */}
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--text-tertiary)",
+                marginTop: "var(--space-4)",
+                textAlign: "center",
+                lineHeight: 1.6,
+              }}
+            >
+              💡 The <strong>Cover Photo</strong> (slot 1) is what renters see
+              first in search results. Choose your best photo for the cover!
+            </p>
           </div>
 
           {/* ─── Submit ─── */}
           <button
             type="submit"
-            disabled={loading || imageFiles.length !== 4}
+            disabled={loading || !allFilled}
             className="btn btn-primary btn-full btn-lg"
           >
             {loading ? "⏳ Uploading Vehicle..." : "🚀 Submit Vehicle"}

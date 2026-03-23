@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { settingsData } from "@/settings";
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your SIRAA seller account.',
+}
+
 // ─── Google SVG icon ───
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
