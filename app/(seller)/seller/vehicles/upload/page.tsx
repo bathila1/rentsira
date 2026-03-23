@@ -18,6 +18,7 @@ const defaultForm = {
   district: "",
   latitude: "",
   longitude: "",
+  description: "",
 };
 
 export default function UploadVehiclePage() {
@@ -152,6 +153,7 @@ export default function UploadVehiclePage() {
           district: form.district,
           latitude: form.latitude || null,
           longitude: form.longitude || null,
+          description: form.description || ""
         },
       ]);
       if (error) throw error;
@@ -351,6 +353,18 @@ export default function UploadVehiclePage() {
                 </select>
               </div>
             </div>
+              <div style={{ marginTop: "8px"}}>
+                <label className="form-label">
+                  Description <span className="optional">(Optional)</span>
+                </label>
+                <textarea
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                placeholder="e.g. Call me for more info..."
+                rows={3}
+                className="input textarea"
+              />
+              </div>
           </div>
 
           {/* ─── SECTION 2: Pricing ─── */}

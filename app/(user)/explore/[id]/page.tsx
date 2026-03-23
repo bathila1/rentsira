@@ -7,6 +7,7 @@ import ImageGallery from "./components/ImageGallery";
 import StickyCallBar from "./components/StickyCallBar";
 import { settingsData } from "@/settings";
 import type { Metadata } from "next";
+import BackButton from "./components/BackBtn";
 
 const SiteDomain = settingsData.SiteDomain;
 // Normalizes any Sri Lankan phone format to WhatsApp-ready international format
@@ -113,6 +114,7 @@ export default async function VehicleDetailPage({
     { label: "Year", value: vehicle.year, icon: "📅" },
     { label: "Fuel Type", value: vehicle.fuel_type, icon: "⛽" },
     { label: "District", value: vehicle.district, icon: "📍" },
+    { label: "Description", value: vehicle.description || "-", icon: "📝" },
     {
       label: "Driver",
       value: vehicle.with_driver ? "Included" : "Self Drive",
@@ -134,15 +136,8 @@ export default async function VehicleDetailPage({
           paddingBottom: "calc(var(--space-8) + 80px)",
         }}
       >
-        {/* ─── BACK ─── */}
-        <Link
-          href="/explore"
-          className="btn btn-ghost btn-sm"
-          style={{ marginBottom: "var(--space-6)", display: "inline-flex" }}
-        >
-          {"←"} Back
-        </Link>
-
+        {/* ─── BACK ─── back */}
+       <BackButton/>
         {/* ─── TOP GRID ─── */}
         <div
           style={{

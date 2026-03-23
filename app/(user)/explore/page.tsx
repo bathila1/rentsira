@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Link from "next/link";
 
 import type { Metadata } from "next";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Explore Vehicles",
@@ -92,7 +93,7 @@ export default async function ExplorePage({
         style={{ padding: "var(--space-8) var(--space-4)" }}
       >
         <Link
-          href="/ "
+          href="/"
           className="btn btn-ghost btn-sm"
           style={{
             //position right top

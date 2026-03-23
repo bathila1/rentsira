@@ -504,7 +504,7 @@ export default function Dashboard() {
           className="btn btn-ghost btn-sm"
           style={{ marginBottom: "var(--space-6)", display: "inline-flex" }}
         >
-          {"←"} Back to Home
+          {"←"} Back to Home  
         </Link>
           {/* ─── PROFILE CARD ─── */}
           <div
@@ -756,7 +756,7 @@ export default function Dashboard() {
                             Rs. {v.daily_rate?.toLocaleString()}
                             <span>/day</span>
                           </p>
-                          <p
+                          {/* <p
                             style={{
                               fontSize: "0.75rem",
                               color: "var(--text-tertiary)",
@@ -764,7 +764,7 @@ export default function Dashboard() {
                             }}
                           >
                             👁️ {v.view_count || 0} views
-                          </p>
+                          </p> */}
                         </div>
                       </div>
 
@@ -778,7 +778,7 @@ export default function Dashboard() {
                         }}
                       >
                         <Link
-                          href={`/explore/${v.id}`}
+                          href={`/explore/${v.id}?sellerView=true`}
                           className="btn btn-secondary btn-sm"
                         >
                           👁️ View
