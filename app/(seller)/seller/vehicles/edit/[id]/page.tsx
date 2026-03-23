@@ -23,6 +23,7 @@ export default function EditVehiclePage() {
     latitude: "",
     longitude: "",
     description: "",
+    seat_count: "",
   });
   const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -59,6 +60,7 @@ export default function EditVehiclePage() {
         latitude: data.latitude?.toString() || "",
         longitude: data.longitude?.toString() || "",
         description: data.description || "",
+        seat_count: data.seat_count?.toString() || "",
       });
       if (data.latitude) setGpsStatus("set");
       setPageLoading(false);
@@ -104,6 +106,7 @@ export default function EditVehiclePage() {
           latitude: form.latitude || null,
           longitude: form.longitude || null,
           description: form.description || "",
+          seat_count: form.seat_count || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -113,6 +116,11 @@ export default function EditVehiclePage() {
       alert(err.message);
     } finally {
       setSaving(false);
+      //scroll to top
+      window.scrollTo(0, 0);
+
+      //wait for 1.5s and redirect to dashboard
+      setTimeout(() => router.push("/seller/dashboard"), 1500);
     }
   };
 
@@ -241,7 +249,7 @@ export default function EditVehiclePage() {
             className="alert alert-success animate-fade-in"
             style={{ marginBottom: "var(--space-5)" }}
           >
-            ✅ Vehicle details saved successfully!
+            ✅ Vehicle details saved successfully! Redirecting...
           </div>
         )}
 
@@ -313,8 +321,23 @@ export default function EditVehiclePage() {
                   onChange={(e) => set("year", e.target.value)}
                   placeholder="e.g. 2019"
                   required
-                  min="1990"
-                  max="2025"
+                  min="1900"
+                  max={new Date().getFullYear()}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="form-label">
+                  Seats <span className="required">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={form.seat_count}
+                  onChange={(e) => set("seat_count", e.target.value)}
+                  placeholder="e.g. 4 seats"
+                  required
+                  min="1"
+                  max="100"
                   className="input"
                 />
               </div>

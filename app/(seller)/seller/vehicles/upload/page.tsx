@@ -19,6 +19,7 @@ const defaultForm = {
   latitude: "",
   longitude: "",
   description: "",
+  seat_count: "",
 };
 
 export default function UploadVehiclePage() {
@@ -153,7 +154,8 @@ export default function UploadVehiclePage() {
           district: form.district,
           latitude: form.latitude || null,
           longitude: form.longitude || null,
-          description: form.description || ""
+          description: form.description || "",
+          seat_count: form.seat_count || null,
         },
       ]);
       if (error) throw error;
@@ -334,8 +336,23 @@ export default function UploadVehiclePage() {
                   onChange={(e) => set("year", e.target.value)}
                   placeholder="e.g. 2019"
                   required
-                  min="1990"
-                  max="2025"
+                  min="1900"
+                  max={new Date().getFullYear()}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="form-label">
+                  Seats <span className="required">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={form.seat_count}
+                  onChange={(e) => set("seat_count", e.target.value)}
+                  placeholder="e.g. 4 seats"
+                  required
+                  min="1"
+                  max="100"
                   className="input"
                 />
               </div>
@@ -606,53 +623,7 @@ export default function UploadVehiclePage() {
                           onMouseLeave={(e) =>
                             (e.currentTarget.style.opacity = "0")
                           }
-                        >
-                          {/* Replace button */}
-                          <label
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              background: "white",
-                              color: "var(--neutral-900)",
-                              borderRadius: "var(--radius-full)",
-                              padding: "6px 14px",
-                              fontSize: "0.78rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              fontFamily: "var(--font-body)",
-                            }}
-                          >
-                            <input
-                              type="file"
-                              accept="image/*"
-                              hidden
-                              onChange={(e) => handleSlotSelect(i, e)}
-                            />
-                            🔄 Replace
-                          </label>
-
-                          {/* Remove button */}
-                          <button
-                            type="button"
-                            onClick={() => handleSlotRemove(i)}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              background: "rgb(239 68 68)",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "var(--radius-full)",
-                              padding: "6px 14px",
-                              fontSize: "0.78rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              fontFamily: "var(--font-body)",
-                            }}
-                          >
-                            🗑️ Remove
-                          </button>
+                        > 
                         </div>
 
                         {/* Badge */}
@@ -664,7 +635,7 @@ export default function UploadVehiclePage() {
                             left: "8px",
                           }}
                         >
-                          {isCover ? "★ Cover" : `Photo ${i + 1}`}
+                          {isCover ? "★ Cover Photo" : `Photo ${i + 1}`}
                         </span>
 
                         {/* Mobile remove button (always visible) */}

@@ -169,10 +169,14 @@ export default async function Home() {
 
           {/* CTA */}
           <div style={{ textAlign: 'center', marginTop: 'var(--space-12)' }}>
-            <Link href="/explore" className="btn btn-primary btn-lg">
+            <Link href="/explore" className="btn btn-primary btn-lg" style={{ marginRight: "10px"}}>
               Browse All Vehicles 🚀
             </Link>
+          <Link href="/get-started" className="btn btn-secondary btn-lg" style={{ marginLeft: "10px"}}>
+            🚗 Post Your Vehicle Free
+          </Link>
           </div>
+
 
         </div>
       </section>
