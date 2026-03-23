@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase'
 import { settingsData } from '@/settings'
+import OtpVerify from '../components/OtpVerify'
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -13,6 +14,8 @@ export default function EditProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState(false)
   const [saved,   setSaved]   = useState(false)
+
+  const [showOtp, setShowOtp] = useState(false)
 
   const set = (f: keyof typeof form, v: string) =>
     setForm((p) => ({ ...p, [f]: v }))
@@ -260,6 +263,35 @@ export default function EditProfilePage() {
               </p>
             </div>
 
+            {/* Verify button — shows only if phone added but not verified */}
+{form.phone && !profile?.phone_verified && (
+  <button
+    type="button"
+    onClick={() => setShowOtp(true)}
+    className="btn btn-primary btn-sm"
+    style={{ marginTop: 'var(--space-2)', width: '100%' }}
+  >
+    📱 Verify Phone Number via OTP
+  </button>
+)}
+
+{/* Already verified badge */}
+{profile?.phone_verified && (
+  <div style={{
+    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+    marginTop: 'var(--space-2)',
+    padding: 'var(--space-2) var(--space-3)',
+    background: 'var(--color-success-light)',
+    border: '1px solid var(--color-success-border)',
+    borderRadius: 'var(--radius-lg)',
+  }}>
+    <span style={{ fontSize: '0.85rem' }}>✅</span>
+    <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-success)' }}>
+      Phone verified
+    </p>
+  </div>
+)}
+
             {/* Bio */}
             <div className="form-group">
               <label className="form-label">
@@ -300,6 +332,38 @@ export default function EditProfilePage() {
 
         </form>
       </div>
+
+      {/* ─── OTP Overlay ─── */}
+{showOtp && user && (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 100,
+    background: 'rgb(0 0 0 / 0.55)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'center',
+    padding: 'var(--space-4)',
+  }}>
+    <OtpVerify
+      phone={form.phone}
+      userId={user.id}
+      onSuccess={async () => {
+        setShowOtp(false)
+        // Refetch profile to get updated verified status
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)  
+          .single()
+        setProfile(data)
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      }}
+      onCancel={() => setShowOtp(false)}
+    />
+  </div>
+)}
     </div>
+
+    
   )
 }
