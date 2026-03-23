@@ -140,7 +140,7 @@ export default async function VehicleDetailPage({
           className="btn btn-ghost btn-sm"
           style={{ marginBottom: "var(--space-6)", display: "inline-flex" }}
         >
-          {"←"} Back to Explore
+          {"←"} Back
         </Link>
 
         {/* ─── TOP GRID ─── */}

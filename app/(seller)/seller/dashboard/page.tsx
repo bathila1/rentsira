@@ -499,6 +499,13 @@ export default function Dashboard() {
           className="container"
           style={{ padding: "var(--space-8) var(--space-4)" }}
         >
+          <Link
+          href="/"
+          className="btn btn-ghost btn-sm"
+          style={{ marginBottom: "var(--space-6)", display: "inline-flex" }}
+        >
+          {"←"} Back to Home
+        </Link>
           {/* ─── PROFILE CARD ─── */}
           <div
             className="card card-p"

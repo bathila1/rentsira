@@ -2,6 +2,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ContactForm from '@/components/ContactForm'
 import { settingsData } from '@/settings'
+import Link from 'next/link'
 
 import type { Metadata } from 'next'
 
@@ -14,6 +15,14 @@ export default function ContactPage() {
   return (
     <div className="page">
       <Header />
+
+      <Link
+          href="/"
+          className="btn btn-ghost btn-sm"
+          style={{ marginBottom: "var(--space-2)", marginLeft: 'var(--space-4)',  display: "inline-flex", marginTop: 'var(--space-2)'}}
+        >
+          {"←"} Back to Home
+        </Link>
 
       {/* ─── HERO ─── */}
       <section style={{

@@ -29,7 +29,7 @@ export default function GetStartedPage() {
             href="/register"
             className="btn btn-secondary btn-lg btn-full shadow-sm"
           >
-            Create Account
+            No, Register
           </Link>
         </div>
         <br />
@@ -43,6 +43,12 @@ export default function GetStartedPage() {
          {settingsData.phone3}
         </p>
         </Link>
+
+        <p style={{ textAlign: 'center', marginTop: 'var(--space-5)', fontSize: '0.8rem' }}>
+          <Link href="/" style={{ color: 'var(--text-tertiary)' }}>
+            {'←'} Back to Home
+          </Link>
+        </p>
       </div>
     </div>
   );

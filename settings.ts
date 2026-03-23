@@ -4,6 +4,7 @@ const settingsData = {
   WebName: "Rent",
   WebTitle: "Rent",
   FooterText: "Developed with ❤️ by Bathila",
+  FooterTextLink: "https://bathila.netlify.app/",
   WebDescription: "",
   WebKeywords: "",
   FrontPageMainSmallText:
