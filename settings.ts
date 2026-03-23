@@ -13,6 +13,7 @@ const settingsData = {
   supportMail: "bathi.solutions@gmail.com",
   phone1: "076 47 900 33",
   phone2: "94764790033",
+  phone3: "0764790033",
   SupportWhatsappNumber: "+94764790033",
   vehiclesPerPage: 10,
 };

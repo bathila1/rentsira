@@ -44,10 +44,8 @@ export async function updateSession(request: NextRequest) {
 
   //if logged in do not show login and register pages redirect to seller/dashboard instead
   if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/register")) ||
-    request.nextUrl.pathname.startsWith("/check")
+    (user &&
+      (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/register")  || request.nextUrl.pathname.startsWith("/get-started")) )
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/seller/dashboard";

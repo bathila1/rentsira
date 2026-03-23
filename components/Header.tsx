@@ -16,7 +16,7 @@ const Header = () => {
           <Link href="/explore" className="btn btn-ghost btn-sm">
             Search
           </Link>
-          <Link href="/check" className="btn btn-primary btn-sm">
+          <Link href="/get-started" className="btn btn-primary btn-sm">
             Post Free
           </Link>
         </nav>
