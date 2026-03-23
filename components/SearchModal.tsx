@@ -45,7 +45,7 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
       if (data.year)     params.set('year',     data.year)
       if (data.district) params.set('district', data.district)
       if (data.type)     params.set('type',     data.type)
-      if (data.fuel)     params.set('fuel',     data.fuel)
+      if (data.fuel_type)     params.set('fuel_type',     data.fuel_type)
 
       onClose()
       router.push(`/explore?${params.toString()}`)
@@ -66,7 +66,8 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
     'KDH van Colombo with driver',
     'SUV 2020 Kandy',
     'electric car Galle',
-    '2018 Premio'
+    '2018 Premio',
+    'electric vehicles'
   ]
 
   return (

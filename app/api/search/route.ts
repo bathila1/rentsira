@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
                         "electric car galle" → {"type":"Car","fuel_type":"Electric","district":"Galle"}
                         "8 seater van" → {"type":"Van","seat_count":"8"}
                         "beemer" → {"make":"BMW"}
-                        "without driver suv kandy" → {"type":"SUV","district":"Kandy","with_driver":"false"}`,
+                        "without driver suv kandy" → {"type":"SUV","district":"Kandy","with_driver":"false"},
+                        "electric vehicles" → {"fuel_type":"Electric"}`,
           },
           {
             role: "user",
@@ -102,18 +103,24 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
+    console.log(data.choices?.[0]?.message?.content.trim());
+
     const content = data.choices?.[0]?.message?.content?.trim();
 
     if (!content) throw new Error("Empty response from AI");
 
     // ─── Parse JSON safely ───
     const parsed = JSON.parse(content);
+    console.log("parsed : ", parsed);
+
 
     // ─── Clean nulls ───
     const result: Record<string, string> = {};
     for (const [key, val] of Object.entries(parsed)) {
       if (val && val !== "null") result[key] = String(val);
     }
+
+    console.log("result : ", result);
 
     return NextResponse.json(result);
   } catch (err: any) {
