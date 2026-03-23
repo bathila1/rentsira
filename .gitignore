@@ -40,5 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# google client secret file at the root - client_secret_934417823388-rorbf68gu6rinf180bhb86dqe1bank2k.apps.googleusercontent.com.json
-client_secret_934417823388-rorbf68gu6rinf180bhb86dqe1bank2k.apps.googleusercontent.com.json
+/gitignore
