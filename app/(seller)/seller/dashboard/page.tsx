@@ -400,7 +400,7 @@ export default function Dashboard() {
               }}
             >
               Adding your phone number <strong>instantly verifies</strong> your
-              account. OTP verification will be required in a future update.
+              account. (OTP verification will be required.)
             </p>
           </div>
 

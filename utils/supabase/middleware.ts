@@ -30,10 +30,10 @@ export async function updateSession(request: NextRequest) {
   );
 
   // This will refresh the session if it's expired
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  // console.log("Middleware Check - User Found:", user ? user.email : "NO USER");
 
   // Logic: If no user and trying to access /seller, redirect to login
   if (!user && request.nextUrl.pathname.startsWith("/seller")) {
@@ -41,19 +41,34 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
+  
+  //new {
+      // if (user && (request.nextUrl.pathname.startsWith("/seller/vehicles"))) {
+      //   const { data: profileData, error } = await supabase
+      //     .from("profiles")
+      //     .select("user_status") // Optimization: Only select what you need
+      //     .eq("id", user.id)
+      //     .single();
 
-  //new
-  // 2. NEW Logic: Strict Verification for uploads
-  if (user && request.nextUrl.pathname.startsWith("/seller/vehicles")) {
-    const isVerified = user.user_metadata?.is_verified === true;
+      //   // 2. Handle potential errors (e.g., profile doesn't exist yet)
+      //   if (error) {
+      //     console.error("Error fetching profile:", error.message);
+      //     return;
+      //   }
 
-    if (!isVerified) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/seller/dashboard"; // Create this page next
-      return NextResponse.redirect(url);
-    }
-  }
-  //new
+      //   // 3. Use the correct variable name
+      //   if (profileData) {
+      //     console.log("User Status:", profileData.user_status);
+      //     const user_status =  profileData.user_status
+      //     if (user_status === "pending") {
+      //       const url = request.nextUrl.clone();
+      //       url.pathname = "/seller/dashboard/admin-verification/pending"; // Create this page next
+      //       return NextResponse.redirect(url);
+      //     }
+      //   }
+      // }
+    
+  //new }
 
   //if logged in do not show login and register pages redirect to seller/dashboard instead
   if (
