@@ -46,6 +46,8 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
       if (data.district) params.set('district', data.district)
       if (data.type)     params.set('type',     data.type)
       if (data.fuel_type)     params.set('fuel_type',     data.fuel_type)
+      if (data.seat_count)   params.set('seat_count',   data.seat_count)
+      
 
       onClose()
       router.push(`/explore?${params.toString()}`)
@@ -67,7 +69,8 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
     'SUV 2020 Kandy',
     'electric car Galle',
     '2018 Premio',
-    'electric vehicles'
+    'electric vehicles',
+    '8 seater van'
   ]
 
   return (

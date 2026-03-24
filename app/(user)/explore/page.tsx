@@ -24,6 +24,8 @@ export async function generateMetadata({
   if (params.fuel_type) parts.push(params.fuel_type)
   if (params.with_driver === 'true')  parts.push('with Driver')
   if (params.with_driver === 'false') parts.push('Self Drive')
+  if (params.seat_count)   parts.push(`${params.seat_count} seats`)
+
 
   const title = parts.length > 0
     ? `${parts.join(' ')} for Rent`
@@ -76,8 +78,9 @@ const make       = params.make        || ''
 const model      = params.model       || ''
 const year       = params.year        || ''
 const fuelType   = params.fuel_type   || ''
-const seatCount  = params.seat_count  || ''
 const description = params.description || ''
+const seat_count = params.seat_count || ''
+
 
   // let query = supabase
   //   .from("uploaded_rent_vehicles")
@@ -97,7 +100,7 @@ if (make)        query = query.ilike('make',        `%${make}%`)
 if (model)       query = query.ilike('model',       `%${model}%`)
 if (year)        query = query.eq('year',           parseInt(year))
 if (fuelType)    query = query.ilike('fuel_type',   fuelType)
-if (seatCount)   query = query.eq('seat_count',     parseInt(seatCount))
+if (seat_count)   query = query.eq('seat_count',     parseInt(seat_count))
 if (description) query = query.ilike('description', `%${description}%`)
   
 

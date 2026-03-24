@@ -26,7 +26,7 @@ function toWAPhone(phone: string): string {
   if (!phone) return null
 
   const waMessage = encodeURIComponent(
-    `Hi! I'm interested in your ${vehicle} listed on SIRA. Is it still available?`
+    `Hi! I'm interested in your ${vehicle} listed on SIRAA. Is it still available?`
   )
   const phoneDigits = toWAPhone(phone)
 

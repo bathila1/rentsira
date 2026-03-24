@@ -379,7 +379,7 @@ export default async function VehicleDetailPage({
                   {/* WhatsApp */}
                   <a
                     href={`https://wa.me/${toWAPhone(sellerPhone)}?text=${encodeURIComponent(
-                      `Hi! I'm interested in your ${vehicle.make} ${vehicle.model} (${vehicle.year}) listed on SIRA. Is it still available?`,
+                      `Hi! I'm interested in your ${vehicle.make} ${vehicle.model} (${vehicle.year}) listed on SIRAA. Is it still available?`,
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

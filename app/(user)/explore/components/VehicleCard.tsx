@@ -94,7 +94,7 @@ export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
               border: "none",
             }}
           >
-            👨‍✈️ Driver
+            👨‍✈️  With Driver
           </span>
         )}
       </div>

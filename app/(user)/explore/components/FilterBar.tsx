@@ -1,16 +1,12 @@
 'use client'
 
+
+import { dynamicData, SriLankanDistricts } from '@/settings'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 
-const VEHICLE_TYPES = ['Car', 'Van', 'SUV', 'Bus', 'Truck', 'Motorbike', 'Three-wheeler']
-const DISTRICTS = [
-  'Colombo','Gampaha','Kalutara','Kandy','Matale','Nuwara Eliya',
-  'Galle','Matara','Hambantota','Jaffna','Kilinochchi','Mannar',
-  'Vavuniya','Batticaloa','Ampara','Trincomalee','Kurunegala',
-  'Puttalam','Anuradhapura','Polonnaruwa','Badulla','Monaragala',
-  'Ratnapura','Kegalle',
-]
+const VEHICLE_TYPES = dynamicData.vehicle_types
+const DISTRICTS = SriLankanDistricts
 
 const DRIVER_LABELS: Record<string, string> = {
   true:  '👨‍✈️ With Driver',
@@ -64,18 +60,30 @@ export default function FilterBar() {
   const activeType       = searchParams.get('type')       || ''
   const activeDistrict   = searchParams.get('district')   || ''
   const activeWithDriver = searchParams.get('with_driver') || ''
-  const hasFilters = !!(activeType || activeDistrict || activeWithDriver || hasGPS)
+  const activeSeatCount  = searchParams.get('seat_count') || ''
+  const activeFuelType   = searchParams.get('fuel_type')  || ''
+  const activeModel            = searchParams.get('model')      || ''
+  const activeMake             = searchParams.get('make')       || ''
+  const activeYear             = searchParams.get('year')       || ''
+
+  const hasFilters = !!(activeType || activeDistrict || activeWithDriver || hasGPS || activeSeatCount || activeFuelType || activeModel || activeMake || activeYear)
 
   // ── Build active chip list ──
   const activeChips = [
     activeType       && { key: 'type',        label: `🚗 ${activeType}` },
     activeDistrict   && { key: 'district',     label: `📍 ${activeDistrict}` },
     activeWithDriver && { key: 'with_driver',  label: DRIVER_LABELS[activeWithDriver] || activeWithDriver },
+    activeSeatCount && {key : 'seat_count', label: `${activeSeatCount} seats` },
+    activeFuelType && {key : 'fuel_type', label: `${activeFuelType}` },
+    activeModel && {key : 'model', label: `${activeModel}` },
+    activeMake && {key : 'make', label: `${activeMake}` },
+    activeYear && {key : 'year', label: `${activeYear}` },
     hasGPS           && { key: 'gps',          label: '📍 Near Me' },
+
   ].filter(Boolean) as { key: string; label: string }[]
 
   const selectStyle = {
-    background: 'var(--bg-subtle)',
+    backgroundColor: 'var(--bg-subtle)',
     border: '1.5px solid var(--border-default)',
     borderRadius: 'var(--radius-lg)',
     padding: '0.55rem 2rem 0.55rem 0.85rem',
@@ -106,7 +114,7 @@ export default function FilterBar() {
           style={{
             ...selectStyle,
             borderColor: activeType ? 'var(--color-primary)' : 'var(--border-default)',
-            background:  activeType ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
+            backgroundColor:  activeType ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
             color:       activeType ? 'var(--color-primary)' : 'var(--text-primary)',
           }}
         >
@@ -121,7 +129,7 @@ export default function FilterBar() {
           style={{
             ...selectStyle,
             borderColor: activeDistrict ? 'var(--color-primary)' : 'var(--border-default)',
-            background:  activeDistrict ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
+            backgroundColor:  activeDistrict ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
             color:       activeDistrict ? 'var(--color-primary)' : 'var(--text-primary)',
           }}
         >
@@ -136,7 +144,7 @@ export default function FilterBar() {
           style={{
             ...selectStyle,
             borderColor: activeWithDriver ? 'var(--color-primary)' : 'var(--border-default)',
-            background:  activeWithDriver ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
+            backgroundColor:  activeWithDriver ? 'var(--color-primary-light)' : 'var(--bg-subtle)',
             color:       activeWithDriver ? 'var(--color-primary)' : 'var(--text-primary)',
           }}
         >
@@ -151,7 +159,7 @@ export default function FilterBar() {
             onClick={clearGPS}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'var(--color-primary-light)',
+              backgroundColor: 'var(--color-primary-light)',
               border: '1.5px solid var(--color-primary-border)',
               color: 'var(--color-primary)',
               borderRadius: 'var(--radius-lg)',
@@ -163,7 +171,7 @@ export default function FilterBar() {
           >
             📍 Near Me
             <span style={{
-              background: 'var(--color-primary)',
+              backgroundColor: 'var(--color-primary)',
               color: 'white', borderRadius: '50%',
               width: '16px', height: '16px',
               display: 'flex', alignItems: 'center',
@@ -177,7 +185,7 @@ export default function FilterBar() {
             disabled={gpsLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'var(--bg-subtle)',
+              backgroundColor: 'var(--bg-subtle)',
               border: '1.5px solid var(--border-default)',
               color: 'var(--text-secondary)',
               borderRadius: 'var(--radius-lg)',
@@ -244,7 +252,7 @@ export default function FilterBar() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                background: 'var(--neutral-950)',
+                backgroundColor: 'var(--neutral-950)',
                 color: 'var(--neutral-0)',
                 border: 'none',
                 borderRadius: 'var(--radius-full)',
@@ -269,7 +277,7 @@ export default function FilterBar() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: '14px', height: '14px',
-                background: 'rgb(255 255 255 / 0.2)',
+                backgroundColor: 'rgb(255 255 255 / 0.2)',
                 borderRadius: '50%',
                 fontSize: '0.6rem',
                 fontWeight: 800,

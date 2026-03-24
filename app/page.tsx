@@ -60,12 +60,12 @@ export default async function Home() {
               <div className="stat-pill-label">Vehicles Listed</div>
             </div>
 
-            {/* <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} /> 
+            {/* <div style={{ width: '1px', height: '36px', backgroundColor: 'rgb(255 255 255 / 0.1)' }} /> 
             <div className="stat-pill">
               <div className="stat-pill-value">25</div>
               <div className="stat-pill-label">Districts</div>
             </div> */}
-            {/* <div style={{ width: '1px', height: '36px', background: 'rgb(255 255 255 / 0.1)' }} /> */}
+            {/* <div style={{ width: '1px', height: '36px', backgroundColor: 'rgb(255 255 255 / 0.1)' }} /> */}
             {/* <div className="stat-pill">
               <div className="stat-pill-value">7</div>
               <div className="stat-pill-label">Vehicle Types</div>
@@ -102,7 +102,7 @@ export default async function Home() {
                 className="vehicle-card animate-fade-in"
               >
                 {/* Image */}
-                <div style={{ position: 'relative', height: '180px', overflow: 'hidden', background: 'var(--bg-subtle)' }}>
+                <div style={{ position: 'relative', height: '180px', overflow: 'hidden', backgroundColor: 'var(--bg-subtle)' }}>
                   {car.image_urls?.[0] ? (
                     <img
                       src={car.image_urls[0]}
@@ -133,7 +133,7 @@ export default async function Home() {
                     <span className="badge badge-red" style={{
                       position: 'absolute', top: '10px', right: '10px',
                     }}>
-                      👨‍✈️ Driver
+                      👨‍✈️ With Driver
                     </span>
                   )}
                 </div>
