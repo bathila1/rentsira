@@ -42,10 +42,25 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  //new
+  // 2. NEW Logic: Strict Verification for uploads
+  if (user && request.nextUrl.pathname.startsWith("/seller/vehicles")) {
+    const isVerified = user.user_metadata?.is_verified === true;
+
+    if (!isVerified) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/seller/dashboard"; // Create this page next
+      return NextResponse.redirect(url);
+    }
+  }
+  //new
+
   //if logged in do not show login and register pages redirect to seller/dashboard instead
   if (
-    (user &&
-      (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/register")  || request.nextUrl.pathname.startsWith("/get-started")) )
+    user &&
+    (request.nextUrl.pathname.startsWith("/login") ||
+      request.nextUrl.pathname.startsWith("/register") ||
+      request.nextUrl.pathname.startsWith("/get-started"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/seller/dashboard";
