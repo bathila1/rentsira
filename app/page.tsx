@@ -7,9 +7,29 @@ import { settingsData } from '@/settings'
 
 import type { Metadata } from 'next'
 
+const title = 'SIRAA — Vehicle Rental Platform Sri Lanka'
+const description = 'Find and rent cars, vans, SUVs and more across all 25 districts in Sri Lanka. With or without driver.'
+const image = settingsData.FrontPageMainImage
+
 export const metadata: Metadata = {
-  title: 'SIRAA — Vehicle Rental Platform Sri Lanka',
-  description: 'Browse hundreds of vehicles for rent across all 25 districts. Cars, vans, SUVs — with or without a driver.',
+  title: title,
+  description: description,
+
+  // ─── Open Graph (WhatsApp, Facebook previews) ───
+    openGraph: {
+      title,
+      description,
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: "website",
+    },
+
+    // ─── Twitter card ───
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
 }
 
 export default async function Home() {

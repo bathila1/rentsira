@@ -17,6 +17,7 @@ const settingsData = {
   phone3: "0764790033",
   SupportWhatsappNumber: "+94764790033",
   vehiclesPerPage: 10,
+  FrontPageMainImage: "https://nonsocialistic-blanca-cleverishly.ngrok-free.dev/logo1.jpg"
 };
 
 const dynamicData = {
