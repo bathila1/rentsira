@@ -165,7 +165,7 @@ export default function EditProfilePage() {
                   : "var(--color-warning)",
               }}
             >
-              {isVerified ? "Verified Seller" : "Account Not Verified"}
+              {isVerified ? "Verified Renter" : "Account Not Verified"}
             </p>
             <p
               style={{
@@ -273,7 +273,7 @@ export default function EditProfilePage() {
             </p>
             {isVerified && (
               <div style={{ marginTop: "var(--space-1)" }}>
-                <span className="badge badge-green">✅ Verified Seller</span>
+                <span className="badge badge-green">✅ Verified Renter</span>
               </div>
             )}
           </div>

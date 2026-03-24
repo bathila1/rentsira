@@ -32,7 +32,7 @@ export async function generateMetadata({
     : 'Explore Vehicles for Rent'
 
   const description = parts.length > 0
-    ? `Find ${parts.join(' ')} rental vehicles in Sri Lanka on SIRAA. Compare rates and contact sellers directly.`
+    ? `Find ${parts.join(' ')} rental vehicles in Sri Lanka on SIRAA. Compare rates and contact Renters directly.`
     : 'Browse hundreds of vehicles for rent across all 25 districts in Sri Lanka.'
 
   return { title, description }

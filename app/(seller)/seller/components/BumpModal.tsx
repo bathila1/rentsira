@@ -174,7 +174,7 @@ export default function BumpModal({ vehicle, onClose, onSuccess }: {
                 {timeLeft}
               </p>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 'var(--space-3)' }}>
-                Cooldown ensures fair visibility for all sellers
+                Cooldown ensures fair visibility for all Renters.
               </p>
             </div>
           )}

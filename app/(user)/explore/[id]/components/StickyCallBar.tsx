@@ -50,7 +50,7 @@ function toWAPhone(phone: string): string {
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Seller info */}
+      {/* Renter info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
           fontSize: '0.72rem', color: 'var(--text-tertiary)',

@@ -183,7 +183,7 @@ export default function Dashboard() {
                 margin: "0 auto",
               }}
             >
-              You need to verify your account before accessing the seller
+              You need to verify your account before accessing the Renter
               dashboard.
             </p>
           </div>
@@ -546,7 +546,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="label" style={{ marginBottom: "2px" }}>
-                  Seller Account
+                  Renter Account
                 </p>
                 <p
                   style={{

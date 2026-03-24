@@ -3,7 +3,7 @@ import LoginClient from './LoginClient'
 
 export const metadata: Metadata = {
   title: 'Sign In',
-  description: 'Sign in to your Siraa seller account.',
+  description: 'Sign in to your Siraa Renter account.',
 }
 
 export default function LoginPage() {
