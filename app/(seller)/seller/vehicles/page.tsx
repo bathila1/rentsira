@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase'
 import { dynamicData, SriLankanDistricts } from '@/settings'
+import { sanitizePrice, sanitizeText, sanitizeYear } from '@/utils/sanitize'
 
 const defaultForm = {
   type:        dynamicData.vehicle_types[0] as string,
@@ -81,18 +82,18 @@ export default function UploadVehiclePage() {
         uploadedUrls.push(data.publicUrl)
       }
       const { error } = await supabase.from('uploaded_rent_vehicles').insert([{
-        type:         form.type,
-        make:         form.make,
-        model:        form.model,
-        year:         parseInt(form.year),
+        type:         sanitizeText(form.type),
+        make:         sanitizeText(form.make),
+        model:        sanitizeText(form.model),
+        year:         sanitizeYear(form.year),
         seller_id:    user.id,
         image_urls:   uploadedUrls,
-        fuel_type:    form.fuelType,
-        daily_rate:   parseFloat(form.dailyRate),
-        weekly_rate:  form.weeklyRate  ? parseFloat(form.weeklyRate)  : null,
-        monthly_rate: form.monthlyRate ? parseFloat(form.monthlyRate) : null,
+        fuel_type:    sanitizeText(form.fuelType),
+        daily_rate:   sanitizePrice(form.dailyRate),
+        weekly_rate:  form.weeklyRate  ? sanitizePrice(form.weeklyRate)  : null,
+        monthly_rate: form.monthlyRate ? sanitizePrice(form.monthlyRate) : null,
         with_driver:  form.withDriver,
-        district:     form.district,
+        district:     sanitizeText(form.district),
         latitude:     form.latitude  || null,
         longitude:    form.longitude || null,
       }])

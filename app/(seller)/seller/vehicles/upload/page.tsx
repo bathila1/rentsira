@@ -126,8 +126,53 @@ export default function UploadVehiclePage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Please log in first.");
       const uploadedUrls: string[] = [];
+      const MAX_SIZE_MB = 5;
+      const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
       for (const file of slots) {
         if (!file) continue;
+
+        // ----------------------
+        // ─── Validate type ───
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          throw new Error(
+            `Invalid file type: ${file.name}. Only JPG, PNG, WEBP allowed.`,
+          );
+        }
+
+        // ─── Validate size ───
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          throw new Error(
+            `${file.name} is too large. Max size is ${MAX_SIZE_MB}MB.`,
+          );
+        }
+
+        // ─── Validate it's actually an image by reading header bytes ───
+        const buffer = await file.arrayBuffer();
+        // const bytes = new Uint8Array(buffer).slice(0, 4);
+        // const hex = Array.from(bytes)
+        //           .map((b) => b.toString(16).padStart(2, "0"))
+        //           .join("");
+        const bytes = new Uint8Array(buffer).slice(0, 12);
+        const hex = Array.from(bytes)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+
+        const isJpeg = hex.startsWith("ffd8ff");
+
+        // 2. Better WebP check: Must start with RIFF (52494646)
+        // AND contain "WEBP" (57454250) at the 8th byte
+        const isWebp =
+          hex.startsWith("52494646") && hex.slice(16, 24) === "57454250";
+
+        // 3. PNG is already perfect in your code
+        const isPng = hex.startsWith("89504e47");
+
+        if (!isJpeg && !isPng && !isWebp) {
+          throw new Error(`${file.name} is not a valid image file.`);
+        }
+        // ----------------------
+
         const path = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}`;
         const { error: upErr } = await supabase.storage
           .from("vehicle-images")
@@ -370,18 +415,18 @@ export default function UploadVehiclePage() {
                 </select>
               </div>
             </div>
-              <div style={{ marginTop: "8px"}}>
-                <label className="form-label">
-                  Description <span className="optional">(Optional)</span>
-                </label>
-                <textarea
+            <div style={{ marginTop: "8px" }}>
+              <label className="form-label">
+                Description <span className="optional">(Optional)</span>
+              </label>
+              <textarea
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 placeholder="e.g. Call me for more info..."
                 rows={3}
                 className="input textarea"
               />
-              </div>
+            </div>
           </div>
 
           {/* ─── SECTION 2: Pricing ─── */}
@@ -623,8 +668,7 @@ export default function UploadVehiclePage() {
                           onMouseLeave={(e) =>
                             (e.currentTarget.style.opacity = "0")
                           }
-                        > 
-                        </div>
+                        ></div>
 
                         {/* Badge */}
                         <span

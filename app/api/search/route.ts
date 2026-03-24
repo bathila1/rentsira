@@ -1,50 +1,59 @@
+import { dynamicData, SriLankanDistricts } from "@/settings";
 import { NextRequest, NextResponse } from "next/server";
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const DISTRICTS = [
-  "Colombo",
-  "Gampaha",
-  "Kalutara",
-  "Kandy",
-  "Matale",
-  "Nuwara Eliya",
-  "Galle",
-  "Matara",
-  "Hambantota",
-  "Jaffna",
-  "Kilinochchi",
-  "Mannar",
-  "Vavuniya",
-  "Batticaloa",
-  "Ampara",
-  "Trincomalee",
-  "Kurunegala",
-  "Puttalam",
-  "Anuradhapura",
-  "Polonnaruwa",
-  "Badulla",
-  "Monaragala",
-  "Ratnapura",
-  "Kegalle",
-];
-
-const VEHICLE_TYPES = [
-  "Car",
-  "Van",
-  "SUV",
-  "Bus",
-  "Truck",
-  "Motorbike",
-  "Three-wheeler",
-];
+const DISTRICTS = SriLankanDistricts;
+const VEHICLE_TYPES = dynamicData.vehicle_types;
 const FUEL_TYPES = ["Petrol", "Diesel", "Hybrid", "Electric"];
 
+// ─── Simple in-memory rate limiter ───
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const limit = rateLimitMap.get(ip);
+
+  // Reset if window expired
+  if (!limit || now > limit.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 }); // 1 min window
+    return false;
+  }
+
+  // Allow max 10 searches per minute per IP
+  if (limit.count >= 10) return true;
+
+  limit.count++;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
+  // ─── Rate limit check ───
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many searches. Please wait a moment." },
+      { status: 429 },
+    );
+  }
+
   try {
     const { query } = await req.json();
     if (!query)
       return NextResponse.json({ error: "Query required" }, { status: 400 });
+    if (query.length > 200) {
+      return NextResponse.json(
+        { error: "Search query too long." },
+        { status: 400 },
+      );
+    }
 
+    // ─── Basic sanitize — strip HTML tags ───
+    const cleanQuery = query.replace(/<[^>]*>/g, "").trim();
+    
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -52,7 +61,7 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: "llama-3.3-70b-versatile",
         temperature: 0,
         max_tokens: 200,
         messages: [
@@ -91,7 +100,7 @@ export async function POST(req: NextRequest) {
           },
           {
             role: "user",
-            content: query,
+            content: cleanQuery,
           },
         ],
       }),
@@ -112,7 +121,6 @@ export async function POST(req: NextRequest) {
     // ─── Parse JSON safely ───
     const parsed = JSON.parse(content);
     console.log("parsed : ", parsed);
-
 
     // ─── Clean nulls ───
     const result: Record<string, string> = {};

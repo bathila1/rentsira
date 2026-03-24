@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { settingsData } from "@/settings";
 import OtpVerify from "../components/OtpVerify";
+import { formatAndValidateSLNumber, sanitizeText } from "@/utils/sanitize";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function EditProfilePage() {
 
   const set = (f: keyof typeof form, v: string) =>
     setForm((p) => ({ ...p, [f]: v }));
+
+  
 
   useEffect(() => {
     async function load() {
@@ -55,9 +58,9 @@ export default function EditProfilePage() {
     setSaved(false);
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
-      full_name: form.full_name,
-      phone: form.phone,
-      bio: form.bio,
+      full_name: sanitizeText(form.full_name),
+      phone: formatAndValidateSLNumber(form.phone),
+      bio: sanitizeText(form.bio),
       updated_at: new Date().toISOString(),
     });
     setSaving(false);
@@ -107,6 +110,10 @@ export default function EditProfilePage() {
     form.full_name?.[0]?.toUpperCase() ||
     user?.email?.[0]?.toUpperCase() ||
     "?";
+
+  
+
+  
 
   return (
     <div
@@ -285,7 +292,7 @@ export default function EditProfilePage() {
             className="alert alert-success animate-fade-in"
             style={{ marginBottom: "var(--space-4)" }}
           >
-            ✅ Profile saved! Redirecting... 
+            ✅ Profile saved! Redirecting...
             {!isVerified && hasPhone ? " Your account is now verified 🎉" : ""}
           </div>
         )}
@@ -379,13 +386,12 @@ export default function EditProfilePage() {
                   marginTop: "4px",
                 }}
               >
-                📌 Saving a phone number auto-verifies your account (OTP coming
-                soon)
+                📌 Verify your phone through OTP to verify your account
               </p>
             </div>
 
             {/* Verify button — shows only if phone added but not verified */}
-            {form.phone && !profile?.phone_verified && (
+            {formatAndValidateSLNumber(form.phone) && !profile?.phone_verified && (
               <button
                 type="button"
                 onClick={() => setShowOtp(true)}

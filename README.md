@@ -1,5 +1,4 @@
 Next Steps
-[5:14 pm, 23/03/2026] Numaya: Phone number eka verify karana eka therun na
 
 photo ekak replace weddi kalin tibba eka db eken remove kirima check
 seo
