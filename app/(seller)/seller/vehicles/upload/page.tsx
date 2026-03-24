@@ -306,7 +306,7 @@ export default function UploadVehiclePage() {
             </p>
           </div>
           <button
-            onClick={() => router.push("/seller/dashboard")}
+            onClick={() => router.back()}
             className="btn btn-ghost btn-sm"
             style={{ flexShrink: 0 }}
           >

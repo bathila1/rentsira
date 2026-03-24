@@ -10,7 +10,7 @@ export default function BackButton() {
       type="button"
       onClick={() => router.back()}
       className="btn btn-ghost btn-sm"
-      style={{ marginBottom: "var(--space-6)", display: "inline-flex" }}
+      style={{ marginBottom: "var(--space-2)", display: "inline-flex" }}
     >
       {"←"} Back
     </button>

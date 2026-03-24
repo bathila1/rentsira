@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Link from "next/link";
 
 import type { Metadata } from "next";
+import BackButton from "./[id]/components/BackBtn";
 export async function generateMetadata({
   searchParams,
 }: {
@@ -138,8 +139,8 @@ if (description) query = query.ilike('description', `%${description}%`)
         className="container"
         style={{ padding: "var(--space-8) var(--space-4)" }}
       >
-        <Link
-          href="/"
+        {/* <Link
+          href={}
           className="btn btn-ghost btn-sm"
           style={{
             //position right top
@@ -150,13 +151,14 @@ if (description) query = query.ilike('description', `%${description}%`)
           }}
         >
           {"←"} Back
-        </Link>
+        </Link> */}
+        <BackButton/>
 
         {/* ─── Page Header ─── */}
         <div style={{ marginBottom: "var(--space-6)" }}>
-          <p className="label" style={{ marginBottom: "var(--space-1)" }}>
+          {/* <p className="label" style={{ marginBottom: "var(--space-1)" }}>
             Sri Lanka
-          </p>
+          </p> */}
           <div
             style={{
               display: "flex",
@@ -166,7 +168,7 @@ if (description) query = query.ilike('description', `%${description}%`)
               gap: "var(--space-2)",
             }}
           >
-            <h1 style={{ fontSize: "1.75rem" }}>Explore Vehicles</h1>
+            <h1 style={{ fontSize: "1.75rem" }}>Filter Vehicles</h1>
             <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
               {totalCount.toLocaleString()} vehicle{totalCount !== 1 ? "s" : ""}{" "}
               available

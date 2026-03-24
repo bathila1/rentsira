@@ -63,6 +63,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import { settingsData } from "@/settings";
+import BackButton from "@/app/(user)/explore/[id]/components/BackBtn";
 
 export const metadata: Metadata = {
   title: "Get Started",
@@ -245,9 +246,7 @@ export default function GetStartedPage() {
               fontSize: "0.8rem",
             }}
           >
-            <Link href="/" style={{ color: "var(--text-tertiary)" }}>
-              {"←"} Back to Home
-            </Link>
+            <BackButton/>
           </p>
         </div>
       </div>

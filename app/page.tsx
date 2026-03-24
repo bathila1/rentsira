@@ -1,80 +1,110 @@
-import { createClient } from '@/utils/supabase/server'
-import Link from 'next/link'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import Search from '@/components/Search'
-import { settingsData } from '@/settings'
+import { createClient } from "@/utils/supabase/server";
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Search from "@/components/Search";
+import { settingsData } from "@/settings";
 
-import type { Metadata } from 'next'
+import type { Metadata } from "next";
+import SearchBarBig from "@/components/SearchBarBig";
 
-const title = 'SIRAA — Vehicle Rental Platform Sri Lanka'
-const description = 'Find and rent cars, vans, SUVs and more across all 25 districts in Sri Lanka. With or without driver.'
-const image = settingsData.FrontPageMainImage
+const title = "SIRAA — Vehicle Rental Platform Sri Lanka";
+const description =
+  "Find and rent cars, vans, SUVs and more across all 25 districts in Sri Lanka. With or without driver.";
+const image = settingsData.FrontPageMainImage;
 
 export const metadata: Metadata = {
   title: title,
   description: description,
 
   // ─── Open Graph (WhatsApp, Facebook previews) ───
-    openGraph: {
-      title,
-      description,
-      images: [{ url: image, width: 1200, height: 630 }],
-      type: "website",
-    },
+  openGraph: {
+    title,
+    description,
+    images: [{ url: image, width: 1200, height: 630 }],
+    type: "website",
+  },
 
-    // ─── Twitter card ───
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [image],
-    },
-}
+  // ─── Twitter card ───
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [image],
+  },
+};
 
 export default async function Home() {
-  const supabase = await createClient()
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  const supabase = await createClient();
 
   const { data: vehicles, count } = await supabase
-    .from('uploaded_rent_vehicles')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(8)
+    .from("uploaded_rent_vehicles")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .limit(8);
 
   return (
     <div className="page">
-      <Header />
+      {/* <Header /> */}
 
       {/* ─── HERO ─── */}
       <section className="hero">
-        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-
+        <div>
+          <Link href="/get-started" className="btn btn-primary btn-sm" style={{
+            display: "flex",
+      alignItems: "center",
+      gap: "var(--space-2)",
+      position: "absolute",
+      top: "var(--space-4)",   // Spacing from top
+      right: "var(--space-4)", // Spacing from right
+      zIndex: 10
+            //end right
+          }}>
+            Post Free
+          </Link>
+        </div>
+        <div
+          className="container"
+          style={{ textAlign: "center", position: "relative", zIndex: 1 }}
+        >
           <div className="hero-eyebrow">
             🇱🇰 Sri Lanka's Vehicle Rental Platform
           </div>
 
           <h1 className="hero-title">
-            Find Your Perfect<br />
+            Find Your Perfect
+            <br />
             <span className="accent">Rental Vehicle</span>
           </h1>
 
-          <p className="hero-sub" style={{ margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
+          <p
+            className="hero-sub"
+            style={{
+              margin: "0 auto",
+              textAlign: "center",
+              marginBottom: "var(--space-10)",
+            }}
+          >
             {settingsData.FrontPageMainSmallText}
           </p>
 
           {/* Search */}
-          <div style={{ maxWidth: '720px', margin: '0 auto var(--space-12)' }}>
+          <SearchBarBig />
+          <div style={{ maxWidth: "720px", margin: "0 auto var(--space-12)" }}>
             <Search />
           </div>
 
           {/* Stats */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 'var(--space-8)',
-            flexWrap: 'wrap',
-          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "var(--space-8)",
+              flexWrap: "wrap",
+            }}
+          >
             <div className="stat-pill">
               <div className="stat-pill-value">{count?.toLocaleString()}+</div>
               <div className="stat-pill-label">Vehicles Listed</div>
@@ -95,26 +125,35 @@ export default async function Home() {
       </section>
 
       {/* ─── FEATURED VEHICLES ─── */}
-      <section style={{ padding: 'var(--space-16) 0' }}>
+      <section style={{ padding: "var(--space-16) 0" }}>
         <div className="container">
-
           {/* Section header */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 'var(--space-8)' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              marginBottom: "var(--space-8)",
+            }}
+          >
             <div>
               <p className="label">Recently Added</p>
-              <h2 style={{ marginTop: 'var(--space-1)' }}>Latest Listings</h2>
+              <h2 style={{ marginTop: "var(--space-1)" }}>Latest Listings</h2>
             </div>
             <Link href="/explore" className="btn btn-ghost btn-sm">
-              View All {'→'}
+              View All {"→"}
             </Link>
           </div>
 
           {/* Vehicle Grid */}
-          <div className="stagger" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 'var(--space-4)',
-          }}>
+          <div
+            className="stagger"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: "var(--space-4)",
+            }}
+          >
             {vehicles?.map((car) => (
               <Link
                 key={car.id}
@@ -122,7 +161,14 @@ export default async function Home() {
                 className="vehicle-card animate-fade-in"
               >
                 {/* Image */}
-                <div style={{ position: 'relative', height: '180px', overflow: 'hidden', backgroundColor: 'var(--bg-subtle)' }}>
+                <div
+                  style={{
+                    position: "relative",
+                    height: "100px",
+                    overflow: "hidden",
+                    backgroundColor: "var(--bg-subtle)",
+                  }}
+                >
                   {car.image_urls?.[0] ? (
                     <img
                       src={car.image_urls[0]}
@@ -130,29 +176,44 @@ export default async function Home() {
                       className="vehicle-card-image"
                     />
                   ) : (
-                    <div style={{
-                      width: '100%', height: '100%',
-                      display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: '2.5rem',
-                      color: 'var(--neutral-300)'
-                    }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "2.5rem",
+                        color: "var(--neutral-300)",
+                      }}
+                    >
                       🚗
                     </div>
                   )}
 
                   {/* Type badge */}
-                  <span className="badge badge-dark" style={{
-                    position: 'absolute', top: '10px', left: '10px',
-                    backdropFilter: 'blur(8px)',
-                  }}>
+                  <span
+                    className="badge badge-dark"
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      left: "10px",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
                     {car.type}
                   </span>
 
                   {/* Driver badge */}
                   {car.with_driver && (
-                    <span className="badge badge-red" style={{
-                      position: 'absolute', top: '10px', right: '10px',
-                    }}>
+                    <span
+                      className="badge badge-red"
+                      style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                      }}
+                    >
                       👨‍✈️ With Driver
                     </span>
                   )}
@@ -161,21 +222,29 @@ export default async function Home() {
                 {/* Body */}
                 <div className="vehicle-card-body">
                   <div className="vehicle-card-title">
-                    {car.make} {car.model}{' '}
-                    <span style={{ fontWeight: 400, color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                    {car.make} {car.model}{" "}
+                    <span
+                      style={{
+                        fontWeight: 400,
+                        color: "var(--text-tertiary)",
+                        fontSize: "0.85rem",
+                      }}
+                    >
                       ({car.year})
                     </span>
                   </div>
                   <div className="vehicle-card-sub">📍 {car.district}</div>
 
-                  <div style={{
-                    marginTop: 'var(--space-3)',
-                    paddingTop: 'var(--space-3)',
-                    borderTop: '1px solid var(--border-default)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
+                  <div
+                    style={{
+                      marginTop: "var(--space-3)",
+                      paddingTop: "var(--space-3)",
+                      borderTop: "1px solid var(--border-default)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <div className="vehicle-card-price">
                       Rs. {car.daily_rate?.toLocaleString()}
                       <span>/day</span>
@@ -188,20 +257,18 @@ export default async function Home() {
           </div>
 
           {/* CTA */}
-          <div style={{ textAlign: 'center', marginTop: 'var(--space-12)' }}>
-            <Link href="/explore" className="btn btn-primary btn-lg" style={{ marginRight: "10px"}}>
-              Browse All Vehicles 🚀
+          <div style={{ textAlign: "center", marginTop: "var(--space-12)" }}>
+            <Link
+              href="/get-started"
+              className="btn btn-primary btn-lg"
+            >
+              🚗 Post Your Vehicle Free
             </Link>
-          <Link href="/get-started" className="btn btn-secondary btn-lg" style={{ marginLeft: "10px"}}>
-            🚗 Post Your Vehicle Free
-          </Link>
           </div>
-
-
         </div>
       </section>
 
       <Footer />
     </div>
-  )
+  );
 }

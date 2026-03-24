@@ -108,6 +108,7 @@ export default async function VehicleDetailPage({
   ].filter((r) => r.value);
 
   const specs = [
+    { label: "Seats", value: vehicle.seat_count, icon: "🏷️" },
     { label: "Type", value: vehicle.type, icon: "🚘" },
     { label: "Make", value: vehicle.make, icon: "🏭" },
     { label: "Model", value: vehicle.model, icon: "🚗" },

@@ -1,73 +1,74 @@
-'use client'
+"use client";
 
-import { dynamicData, SriLankanDistricts } from '@/settings'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { dynamicData, SriLankanDistricts } from "@/settings";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-const VEHICLE_TYPES = dynamicData.vehicle_types
+const VEHICLE_TYPES = dynamicData.vehicle_types;
 
-const DISTRICTS = SriLankanDistricts
+const DISTRICTS = SriLankanDistricts;
 
 const dropdownStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'rgb(255 255 255 / 0.97)',
-  border: '1.5px solid rgb(255 255 255 / 0.3)',
-  borderRadius: 'var(--radius-lg)',
-  padding: '0.75rem 2.2rem 0.75rem 1rem',
-  fontSize: '0.875rem',
+  width: "100%",
+  background: "rgb(255 255 255 / 0.97)",
+  border: "1.5px solid rgb(255 255 255 / 0.3)",
+  borderRadius: "var(--radius-lg)",
+  padding: "0.75rem 2.2rem 0.75rem 1rem",
+  fontSize: "0.875rem",
   fontWeight: 500,
-  color: 'var(--neutral-800)',
-  fontFamily: 'var(--font-body)',
-  cursor: 'pointer',
-  outline: 'none',
-  appearance: 'none',
+  color: "var(--neutral-800)",
+  fontFamily: "var(--font-body)",
+  cursor: "pointer",
+  outline: "none",
+  appearance: "none",
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2371717a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: 'right 0.6rem center',
-  backgroundSize: '1rem',
-  boxShadow: '0 1px 3px rgb(0 0 0 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9)',
-  transition: 'all 0.15s ease',
-}
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 0.6rem center",
+  backgroundSize: "1rem",
+  boxShadow:
+    "0 1px 3px rgb(0 0 0 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9)",
+  transition: "all 0.15s ease",
+};
 
 export default function Search() {
-  const router = useRouter()
-  const [type,       setType]       = useState('')
-  const [district,   setDistrict]   = useState('')
-  const [driver,     setDriver]     = useState('')
-  const [gpsLoading, setGpsLoading] = useState(false)
+  const router = useRouter();
+  const [type, setType] = useState("");
+  const [district, setDistrict] = useState("");
+  const [driver, setDriver] = useState("");
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   const buildParams = () => {
-    const params = new URLSearchParams()
-    if (type)     params.set('type', type)
-    if (district) params.set('district', district)
-    if (driver)   params.set('with_driver', driver)
-    return params
-  }
+    const params = new URLSearchParams();
+    if (type) params.set("type", type);
+    if (district) params.set("district", district);
+    if (driver) params.set("with_driver", driver);
+    return params;
+  };
 
   const handleSearch = () => {
-    router.push(`/explore?${buildParams().toString()}`)
-  }
+    router.push(`/explore?${buildParams().toString()}`);
+  };
 
   const handleNearMe = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.')
-      return
+      alert("Geolocation is not supported by your browser.");
+      return;
     }
-    setGpsLoading(true)
+    setGpsLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const params = buildParams()
-        params.set('lat', pos.coords.latitude.toFixed(6))
-        params.set('lng', pos.coords.longitude.toFixed(6))
-        router.push(`/explore?${params.toString()}`)
-        setGpsLoading(false)
+        const params = buildParams();
+        params.set("lat", pos.coords.latitude.toFixed(6));
+        params.set("lng", pos.coords.longitude.toFixed(6));
+        router.push(`/explore?${params.toString()}`);
+        setGpsLoading(false);
       },
       () => {
-        alert('Could not get location. Please allow location access.')
-        setGpsLoading(false)
-      }
-    )
-  }
+        alert("Could not get location. Please allow location access.");
+        setGpsLoading(false);
+      },
+    );
+  };
 
   return (
     <>
@@ -156,36 +157,38 @@ export default function Search() {
         }
       `}</style>
 
-      <div style={{ width: '100%', position: 'relative' }}>
-
+      <div style={{ width: "100%", position: "relative" }}>
         {/* Glow ring */}
-        <div style={{
-          position: 'absolute',
-          inset: '-2px',
-          borderRadius: 'calc(var(--radius-xl) + 2px)',
-          background: 'linear-gradient(135deg, rgb(248 50 50 / 0.35), rgb(255 255 255 / 0.05), rgb(248 50 50 / 0.2))',
-          filter: 'blur(8px)',
-          zIndex: 0,
-          pointerEvents: 'none',
-        }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: "-2px",
+            borderRadius: "calc(var(--radius-xl) + 2px)",
+            background:
+              "linear-gradient(135deg, rgb(248 50 50 / 0.35), rgb(255 255 255 / 0.05), rgb(248 50 50 / 0.2))",
+            filter: "blur(8px)",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
 
         {/* Bar */}
         <div
           className="search-bar-grid"
           style={{
-            position: 'relative',
+            position: "relative",
             zIndex: 1,
-            width: '100%',
-            background: 'rgb(15 15 20 / 0.7)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgb(255 255 255 / 0.12)',
-            borderRadius: 'var(--radius-xl)',
-            padding: 'var(--space-3)',
-            boxShadow: '0 8px 40px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08)',
+            width: "100%",
+            background: "rgb(15 15 20 / 0.7)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgb(255 255 255 / 0.12)",
+            borderRadius: "var(--radius-xl)",
+            padding: "var(--space-3)",
+            boxShadow:
+              "0 8px 40px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08)",
           }}
         >
-
           {/* Vehicle Type */}
           <div className="search-bar-type">
             <select
@@ -194,7 +197,11 @@ export default function Search() {
               style={dropdownStyle}
             >
               <option value="">🚗 Type</option>
-              {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {VEHICLE_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -206,7 +213,11 @@ export default function Search() {
               style={dropdownStyle}
             >
               <option value="">📍 District</option>
-              {DISTRICTS.map((d) => <option key={d} value={d}>{d}</option>)}
+              {DISTRICTS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -218,14 +229,13 @@ export default function Search() {
               style={dropdownStyle}
             >
               <option value="">👤 Driver? </option>
-              <option value="true">👨‍✈️ Yes. Need a Driver</option>
-              <option value="false">🔑 No. Self Drive</option>
+              <option value="true">👨‍✈️ With Driver</option>
+              <option value="false">🔑 Without Driver</option>
             </select>
           </div>
 
           {/* Actions row — full width on mobile */}
           <div className="search-bar-actions">
-
             {/* Search */}
             <button onClick={handleSearch} className="search-btn-main">
               🔍 Search
@@ -236,17 +246,19 @@ export default function Search() {
               onClick={handleNearMe}
               disabled={gpsLoading}
               className="search-btn-gps"
-              style={{ opacity: gpsLoading ? 0.5 : 1, cursor: gpsLoading ? 'not-allowed' : 'pointer' }}
+              style={{
+                opacity: gpsLoading ? 0.5 : 1,
+                cursor: gpsLoading ? "not-allowed" : "pointer",
+              }}
             >
-              {gpsLoading ? '⏳' : '📍'}
+              {gpsLoading ? "⏳" : "📍"}
               <span className="search-gps-label">
-                {gpsLoading ? 'Locating...' : 'Near Me'}
+                {gpsLoading ? "Locating..." : "Near Me"}
               </span>
             </button>
-
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }

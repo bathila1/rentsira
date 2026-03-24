@@ -1073,7 +1073,9 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
 
 /* Sticky call bar — desktop hidden */
 @media (min-width: 1024px) {
-  .sticky-call-bar { display: none !important; }
+  .sticky-call-bar { 
+    /* display: none !important;  */
+  }
 }
 
 /* Contact info card */
@@ -1094,3 +1096,85 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
+
+/* loader.tsx */
+/* globals.css */
+
+/* --- Advanced Loader Styling --- */
+
+.professional-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  width: 100%;
+  background-color: var(--bg-card); /* Match your dashboard background */
+  overflow: hidden;
+  z-index: 9999; /* Always on top */
+}
+
+.loader-logo-wrapper {
+  margin-bottom: var(--space-6); /* Use your spacing variable */
+}
+
+/* modern "linear" loader bar */
+.loader-bar-container {
+  width: 250px;
+  height: 4px;
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-bar-progress {
+  width: 40%;
+  height: 100%;
+  background-color: var(--color-primary); /* Your brand color */
+  position: absolute;
+  left: -40%; /* Start off-screen */
+  animation: loading-bar-slide 1.5s ease-in-out infinite;
+}
+
+.loader-text {
+  margin-top: var(--space-4);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+/* --- Professional Animations --- */
+
+@keyframes loading-bar-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Subtle fade in for the entire loader */
+@keyframes fade-in-slow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Pulsing effect for the logo */
+@keyframes pulse-slow {
+  0% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.9; transform: scale(1); }
+}
+
+.animate-fade-in-slow {
+  animation: fade-in-slow 0.6s ease-out forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2.5s ease-in-out infinite;
+}
+/* loader.tsx */

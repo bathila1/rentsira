@@ -13,6 +13,7 @@ interface Vehicle {
   district: string;
   bumped_until?: string;
   distance?: number;
+  seat_count: number;
 }
 
 export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
@@ -27,7 +28,7 @@ export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
       <div
         style={{
           position: "relative",
-          height: "180px",
+          height: "100px",
           overflow: "hidden",
           background: "var(--bg-subtle)",
         }}
@@ -155,7 +156,7 @@ export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
             Rs. {v.daily_rate?.toLocaleString()}
             <span>/day</span>
           </div>
-          <span className="badge badge-gray">{v.fuel_type}</span>
+          <span className="badge badge-gray">{v.seat_count ? v.seat_count + " seats": "-"}</span>
         </div>
       </div>
     </Link>

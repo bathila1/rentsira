@@ -128,11 +128,12 @@ export default function EditProfilePage() {
             <span>{settingsData.LogoTextLastPart}</span>
           </span>
           <button
-            onClick={() => router.push("/seller/dashboard")}
+            onClick={() => router.back()}
             className="btn btn-ghost btn-sm"
           >
             {"←"} Dashboard
           </button>
+        
         </div>
       </header>
 
