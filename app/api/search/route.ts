@@ -40,6 +40,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ─── CSRF: only allow requests from your own domain ───
+  const origin = req.headers.get("origin") || "";
+  const referer = req.headers.get("referer") || "";
+
+  const allowedDomain =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const isAllowed =
+    origin.startsWith(allowedDomain) || referer.startsWith(allowedDomain);
+
+  if (!isAllowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  /////
+
   try {
     const { query } = await req.json();
     if (!query)
@@ -53,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     // ─── Basic sanitize — strip HTML tags ───
     const cleanQuery = query.replace(/<[^>]*>/g, "").trim();
-    
+
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -112,7 +128,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    console.log(data.choices?.[0]?.message?.content.trim());
+    // console.log(data.choices?.[0]?.message?.content.trim());
 
     const content = data.choices?.[0]?.message?.content?.trim();
 
@@ -120,7 +136,7 @@ export async function POST(req: NextRequest) {
 
     // ─── Parse JSON safely ───
     const parsed = JSON.parse(content);
-    console.log("parsed : ", parsed);
+    // console.log("parsed : ", parsed);
 
     // ─── Clean nulls ───
     const result: Record<string, string> = {};

@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   
-  //new {
+  //next v -  i will uncomment this part when im gonna verify users manually //
       // if (user && (request.nextUrl.pathname.startsWith("/seller/vehicles"))) {
       //   const { data: profileData, error } = await supabase
       //     .from("profiles")
@@ -68,7 +68,7 @@ export async function updateSession(request: NextRequest) {
       //   }
       // }
     
-  //new }
+  //next v end
 
   //if logged in do not show login and register pages redirect to seller/dashboard instead
   if (

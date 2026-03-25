@@ -115,15 +115,21 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
               borderBottom: "1px solid var(--border-default)",
             }}
           >
-            {/* Search icon */}
+            {/* close icon */}
             <span
+            onClick={onClose}
               style={{
-                fontSize: "1rem",
+                cursor: "pointer",
                 flexShrink: 0,
                 color: "var(--text-tertiary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "color 0.2s ease",
+                marginLeft: "-8px"
               }}
             >
-              🔍
+              ✕
             </span>
 
             <input
