@@ -253,7 +253,7 @@ export default function Search() {
             >
               {gpsLoading ? "⏳" : "📍"}
               <span className="search-gps-label">
-                {gpsLoading ? "Locating..." : "Near Me"}
+                {gpsLoading ? "Locating..." : "Nearby"}
               </span>
             </button>
           </div>

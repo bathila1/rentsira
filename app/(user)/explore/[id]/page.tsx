@@ -1,15 +1,14 @@
 import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ImageGallery from "./components/ImageGallery";
 import StickyCallBar from "./components/StickyCallBar";
-import { settingsData } from "@/settings";
 import type { Metadata } from "next";
 import BackButton from "./components/BackBtn";
 
-const SiteDomain = settingsData.SiteDomain;
+const SiteDomain = process.env.NEXT_PUBLIC_SITE_URL || "";
+
 // Normalizes any Sri Lankan phone format to WhatsApp-ready international format
 function toWAPhone(phone: string): string {
   // Remove everything except digits
@@ -48,8 +47,8 @@ export async function generateMetadata({
     };
 
   const title = `${vehicle.make} ${vehicle.model} (${vehicle.year}) for Rent in ${vehicle.district}`;
-  const description = `Rent a ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()}/day. ${vehicle.with_driver ? "Driver included." : "Self drive."} ${vehicle.fuel_type}. Book now on SIRAA.`;
-  const image = vehicle.image_urls?.[0] || `${SiteDomain}/og-default.jpg`;
+  const description = `Rent a ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()}/day. ${vehicle.with_driver ? "With Driver." : "Without Driver."} ${vehicle.fuel_type}. Book now on SIRAA.`;
+  const image = vehicle.image_urls?.[0] || `https://cdn.jsdelivr.net/gh/bathila1/web-assets/og-default.jpg`;
 
   return {
     title,
@@ -118,7 +117,7 @@ export default async function VehicleDetailPage({
     { label: "Description", value: vehicle.description || "-", icon: "📝" },
     {
       label: "Driver",
-      value: vehicle.with_driver ? "Included" : "Self Drive",
+      value: vehicle.with_driver ? "With Driver" : "Without Driver",
       icon: "👤",
     },
   ];
@@ -172,7 +171,7 @@ export default async function VehicleDetailPage({
               >
                 <span className="badge badge-gray">{vehicle.type}</span>
                 {vehicle.with_driver && (
-                  <span className="badge badge-green">👨‍✈️ Driver Included</span>
+                  <span className="badge badge-green">👨‍✈️ With Driver</span>
                 )}
                 {isBumped && (
                   <span className="badge badge-red">🔥 Featured</span>
@@ -435,7 +434,7 @@ export default async function VehicleDetailPage({
                 }}
               >
                 <p className="label" style={{ marginBottom: "var(--space-2)" }}>
-                  Share this listing
+                  Share this Vehicle to Friends
                 </p>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(

@@ -297,8 +297,8 @@ export default function UploadVehiclePage() {
             gap: "var(--space-4)",
           }}
         >
-          <div style={{ marginBottom: "var(--space-8)" }}>
-            <h1 style={{ fontSize: "1.6rem", marginBottom: "4px" }}>
+          <div>
+            <h1 style={{ fontSize: "1.6rem", marginBottom: "0px" }}>
               🚗 Add a New Vehicle
             </h1>
             <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
@@ -497,7 +497,7 @@ export default function UploadVehiclePage() {
                     color: "var(--text-primary)",
                   }}
                 >
-                  👨‍✈️ Vehicle includes a driver
+                  👨‍✈️ With driver
                 </p>
                 <p
                   style={{

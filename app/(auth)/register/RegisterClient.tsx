@@ -100,10 +100,10 @@ export default function RegisterClient() {
       if (signInError) {
         // If sign-in fails (e.g., email confirmation required), send them to login
         setError("Account created! Please sign in manually.");
-        setTimeout(() => router.push("/login"), 2000);
+        setTimeout(() => router.push("/login"), 1000);
       } else {
         setSuccess(true);
-        setTimeout(() => router.push("/seller/dashboard"), 1500);
+        setTimeout(() => router.push("/seller/dashboard"), 1000);
         setLoading(false);
       }
       setLoading(false);
@@ -376,7 +376,9 @@ export default function RegisterClient() {
             disabled={loading || success}
             className="btn btn-primary btn-full btn-lg"
           >
+
             {loading ? "⏳ Creating Account..." : "🚀 Create Account"}
+
           </button>
         </form>
 

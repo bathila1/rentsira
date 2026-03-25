@@ -68,12 +68,7 @@ export default function EditProfilePage() {
       alert(error.message);
       return;
     }
-    // const { data } = await supabase
-    //   .from("profiles")
-    //   .select("*")
-    //   .eq("id", user.id)
-    //   .single();
-    // setProfile(data);
+
     setSaved(true);
     // go to dashboard aftr waiting 1.5 seconds
     setTimeout(() => router.push("/seller/dashboard"), 1500);
@@ -137,9 +132,9 @@ export default function EditProfilePage() {
         </div>
       </header>
 
-      <div className="container-sm" style={{ paddingTop: "var(--space-10)" }}>
+      <div className="container-sm" style={{ paddingTop: "var(--space-2)" }}>
         {/* ─── PAGE TITLE ─── */}
-        <div style={{ marginBottom: "var(--space-8)" }}>
+        <div style={{ marginBottom: "var(--space-2)" }}>
           <p className="label" style={{ marginBottom: "var(--space-1)" }}>
             Account
           </p>
@@ -158,7 +153,7 @@ export default function EditProfilePage() {
         {/* ─── VERIFICATION STATUS ─── */}
         <div
           className={`verify-card ${isVerified ? "verified" : "unverified"}`}
-          style={{ marginBottom: "var(--space-5)" }}
+          style={{ marginBottom: "var(--space-2)" }}
         >
           <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>
             {isVerified ? "✅" : "⚠️"}
@@ -380,6 +375,7 @@ export default function EditProfilePage() {
                   }}
                 />
               </div>
+               {!profile?.phone_verified && (
               <p
                 style={{
                   fontSize: "0.75rem",
@@ -389,6 +385,7 @@ export default function EditProfilePage() {
               >
                 📌 Verify your phone through OTP to verify your account
               </p>
+)}
             </div>
 
             {/* Verify button — shows only if phone added but not verified */}
@@ -403,7 +400,7 @@ export default function EditProfilePage() {
               </button>
             )}
 
-            {/* Already verified badge */}
+            {/* Already verified badge
             {profile?.phone_verified && (
               <div
                 style={{
@@ -428,7 +425,7 @@ export default function EditProfilePage() {
                   Phone verified
                 </p>
               </div>
-            )}
+            )} */}
 
             {/* Bio */}
             <div className="form-group">

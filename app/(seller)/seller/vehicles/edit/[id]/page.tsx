@@ -437,7 +437,7 @@ export default function EditVehiclePage() {
                     color: "var(--text-primary)",
                   }}
                 >
-                  👨‍✈️ Vehicle includes a driver
+                  👨‍✈️ With Driver
                 </p>
                 <p
                   style={{

@@ -10,7 +10,7 @@ const DISTRICTS = SriLankanDistricts
 
 const DRIVER_LABELS: Record<string, string> = {
   true:  '👨‍✈️ With Driver',
-  false: '🔑 Self Drive',
+  false: '🔑 Without Driver',
 }
 
 export default function FilterBar() {
@@ -78,7 +78,7 @@ export default function FilterBar() {
     activeModel && {key : 'model', label: `${activeModel}` },
     activeMake && {key : 'make', label: `${activeMake}` },
     activeYear && {key : 'year', label: `${activeYear}` },
-    hasGPS           && { key: 'gps',          label: '📍 Near Me' },
+    hasGPS           && { key: 'gps',          label: '📍 Nearby Vehicles' },
 
   ].filter(Boolean) as { key: string; label: string }[]
 
@@ -150,7 +150,7 @@ export default function FilterBar() {
         >
           <option value="">👤 Driver: Any</option>
           <option value="true">👨‍✈️ With Driver</option>
-          <option value="false">🔑 Self Drive</option>
+          <option value="false">🔑 Without Driver</option>
         </select>
 
         {/* Near Me */}
@@ -169,7 +169,7 @@ export default function FilterBar() {
               transition: 'var(--transition-fast)',
             }}
           >
-            📍 Near Me
+            📍 Nearby Vehicles
             <span style={{
               backgroundColor: 'var(--color-primary)',
               color: 'white', borderRadius: '50%',
@@ -197,7 +197,7 @@ export default function FilterBar() {
               transition: 'var(--transition-fast)',
             }}
           >
-            {gpsLoading ? '⏳ Locating...' : '📍 Near Me'}
+            {gpsLoading ? '⏳ Locating...' : '📍 Nearby Vehicles'}
           </button>
         )}
 

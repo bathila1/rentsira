@@ -1,12 +1,9 @@
 const settingsData = {
-  WebDomain: "rentsira.lk",
-  SiteDomain: "https://nonsocialistic-blanca-cleverishly.ngrok-free.dev/",
-  WebName: "Rent",
-  WebTitle: "Rent",
-  FooterText: "Developed with ❤️ by Bathila",
+  WebDomain: "siraa.lk",
+  WebName: "SIRAA",
+  WebTitle: "SIRAA",
+  FooterText: "Developed with ❤️ by Bathila Sanvidu",
   FooterTextLink: "https://bathila.netlify.app/",
-  WebDescription: "",
-  WebKeywords: "",
   FrontPageMainSmallText:
     "Rent a vehicle? Wedding Hire? For a DayTrip? Cars,Vans,SUVs,Buses (with or without a driver).",
   LogoTextFirstPart: "SI",
@@ -17,7 +14,7 @@ const settingsData = {
   phone3: "0764790033",
   SupportWhatsappNumber: "+94764790033",
   vehiclesPerPage: 10,
-  FrontPageMainImage: "https://nonsocialistic-blanca-cleverishly.ngrok-free.dev/logo1.jpg"
+  FrontPageMainImage: "https://cdn.jsdelivr.net/gh/bathila1/web-assets/logo1.jpg"
 };
 
 const dynamicData = {

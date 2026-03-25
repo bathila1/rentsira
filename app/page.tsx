@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Search from "@/components/Search";
 import { settingsData } from "@/settings";

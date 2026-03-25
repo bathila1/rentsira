@@ -392,7 +392,7 @@ export default function EditImagesPage() {
             onClick={() => router.back()}
             className="btn btn-primary btn-lg"
           >
-            {"←"} Done — Back to Edit Details
+            {"←"} Done
           </button>
         </div>
       </div>

@@ -4,7 +4,6 @@ import VehicleCard from "./components/VehicleCard";
 import Pagination from "./components/Pagination";
 import { Suspense } from "react";
 import Header from "@/components/Header";
-import Link from "next/link";
 
 import type { Metadata } from "next";
 import BackButton from "./[id]/components/BackBtn";
@@ -23,8 +22,8 @@ export async function generateMetadata({
   if (params.year)     parts.push(params.year)
   if (params.district) parts.push(`in ${params.district}`)
   if (params.fuel_type) parts.push(params.fuel_type)
-  if (params.with_driver === 'true')  parts.push('with Driver')
-  if (params.with_driver === 'false') parts.push('Self Drive')
+  if (params.with_driver === 'true')  parts.push('With Driver')
+  if (params.with_driver === 'false') parts.push('Without Driver')
   if (params.seat_count)   parts.push(`${params.seat_count} seats`)
 
 
@@ -137,7 +136,7 @@ if (description) query = query.ilike('description', `%${description}%`)
       <Header />
       <div
         className="container"
-        style={{ padding: "var(--space-8) var(--space-4)" }}
+        style={{ padding: "var(--space-2) var(--space-4)" }}
       >
         {/* <Link
           href={}
