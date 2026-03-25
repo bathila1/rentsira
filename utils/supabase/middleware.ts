@@ -15,8 +15,8 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value, options),
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
@@ -41,33 +41,33 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  
+
   //next v -  i will uncomment this part when im gonna verify users manually //
-      // if (user && (request.nextUrl.pathname.startsWith("/seller/vehicles"))) {
-      //   const { data: profileData, error } = await supabase
-      //     .from("profiles")
-      //     .select("user_status") // Optimization: Only select what you need
-      //     .eq("id", user.id)
-      //     .single();
+  // if (user && (request.nextUrl.pathname.startsWith("/seller/vehicles"))) {
+  //   const { data: profileData, error } = await supabase
+  //     .from("profiles")
+  //     .select("user_status") // Optimization: Only select what you need
+  //     .eq("id", user.id)
+  //     .single();
 
-      //   // 2. Handle potential errors (e.g., profile doesn't exist yet)
-      //   if (error) {
-      //     console.error("Error fetching profile:", error.message);
-      //     return;
-      //   }
+  //   // 2. Handle potential errors (e.g., profile doesn't exist yet)
+  //   if (error) {
+  //     console.error("Error fetching profile:", error.message);
+  //     return;
+  //   }
 
-      //   // 3. Use the correct variable name
-      //   if (profileData) {
-      //     console.log("User Status:", profileData.user_status);
-      //     const user_status =  profileData.user_status
-      //     if (user_status === "pending") {
-      //       const url = request.nextUrl.clone();
-      //       url.pathname = "/seller/dashboard/admin-verification/pending"; // Create this page next
-      //       return NextResponse.redirect(url);
-      //     }
-      //   }
-      // }
-    
+  //   // 3. Use the correct variable name
+  //   if (profileData) {
+  //     console.log("User Status:", profileData.user_status);
+  //     const user_status =  profileData.user_status
+  //     if (user_status === "pending") {
+  //       const url = request.nextUrl.clone();
+  //       url.pathname = "/seller/dashboard/admin-verification/pending"; // Create this page next
+  //       return NextResponse.redirect(url);
+  //     }
+  //   }
+  // }
+
   //next v end
 
   //if logged in do not show login and register pages redirect to seller/dashboard instead
