@@ -45,7 +45,7 @@ export default function OtpVerify({
     try {
       // ─── Check session first ───
       const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { phone, user_id: userId },
+        body: { phone: phone, user_id: userId },
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
@@ -57,21 +57,6 @@ export default function OtpVerify({
       setError(err.message || "Failed to send OTP");
     } finally {
       setSending(false);
-      //upload phone number if phone number is not uploaded(google login)
-      if (isGoogleLogin) {
-        //should upload the phone
-        const { error } = await supabase.from("profiles").upsert({
-          id: userId,
-          phone,
-          phone_verified: true,
-          phone_verified_at: new Date().toISOString(),
-        });
-        if (error) {
-          setError(error.message);
-        } else {
-          onSuccess();
-        }
-      }
     }
   };
 
@@ -124,6 +109,22 @@ export default function OtpVerify({
       // verified successfull
 
       setVerifying(false);
+
+      //upload phone number if phone number is not uploaded(google login)
+      if (isGoogleLogin) {
+        //should upload the phone
+        const { error } = await supabase.from("profiles").upsert({
+          id: userId,
+          phone,
+          phone_verified: true,
+          phone_verified_at: new Date().toISOString(),
+        });
+        if (error) {
+          setError(error.message);
+        } else {
+          onSuccess();
+        }
+      }
     }
   };
 
