@@ -238,51 +238,10 @@ export default function UploadVehiclePage() {
     );
 
   // ─── Not verified gate ───
-  if (isVerified === false)
-    return (
-      <div
-        className="page"
-        style={{
-          display: "grid",
-          placeItems: "center",
-          minHeight: "100vh",
-          padding: "var(--space-6)",
-        }}
-      >
-        <div
-          className="card animate-fade-in-scale"
-          style={{
-            maxWidth: "380px",
-            width: "100%",
-            padding: "var(--space-8)",
-            textAlign: "center",
-            borderColor: "var(--color-warning-border)",
-          }}
-        >
-          <p style={{ fontSize: "3rem", marginBottom: "var(--space-4)" }}>🔒</p>
-          <h2 style={{ fontSize: "1.25rem", marginBottom: "var(--space-2)" }}>
-            Verification Required
-          </h2>
-          <p
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--text-tertiary)",
-              marginBottom: "var(--space-6)",
-              lineHeight: 1.6,
-            }}
-          >
-            You need to verify your account before listing vehicles. Add your
-            phone number to get verified instantly.
-          </p>
-          <button
-            onClick={() => router.push("/seller/profile/edit")}
-            className="btn btn-primary btn-full"
-          >
-            👤 Complete Profile & Verify
-          </button>
-        </div>
-      </div>
-    );
+  // if (isVerified === false)
+  //   return (
+      
+  //   );
 
   return (
     <div className="page" style={{ paddingBottom: "var(--space-16)" }}>

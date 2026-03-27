@@ -6,6 +6,8 @@ import Link from "next/link";
 import { supabase } from "@/utils/supabase";
 import BumpModal from "../components/BumpModal";
 import { settingsData } from "@/settings";
+import OtpVerify from "../profile/components/OtpVerify";
+import { formatAndValidateSLNumber } from "@/utils/sanitize";
 
 const PAGE_SIZE = settingsData.vehiclesPerPage || 5;
 
@@ -20,6 +22,16 @@ export default function Dashboard() {
   const [hasMore, setHasMore] = useState(false);
   const [bumpTarget, setBumpTarget] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [showOtp, setShowOtp] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const set = (f: keyof typeof form, v: string) =>
+    setForm((p) => ({ ...p, [f]: v }));
+
+  const [form, setForm] = useState({
+    phone: "",
+  });
 
   useEffect(() => {
     async function init() {
@@ -41,10 +53,9 @@ export default function Dashboard() {
     }
     init();
   }, []);
-
-  useEffect(() => {
-    if (user) fetchVehicles(user.id);
-  }, [user, page]);
+useEffect(() => {
+  if (user && profile?.is_verified) fetchVehicles(user.id)
+}, [user, page, profile?.is_verified])
 
   async function fetchVehicles(userId: string) {
     setLoadingList(true);
@@ -129,11 +140,156 @@ export default function Dashboard() {
     user?.email?.[0]?.toUpperCase() ||
     "?";
 
-    const isVerified = profile?.is_verified;
+  const isVerified = profile?.is_verified;
+  const isUserHaveAPhoneNumber = profile?.phone;
 
-    console.log(isVerified);
+  // if (!isVerified)
+  //   return (
+  //     <div
+  //       className="page"
+  //       style={{
+  //         display: "grid",
+  //         placeItems: "center",
+  //         minHeight: "100vh",
+  //         padding: "var(--space-6)",
+  //       }}
+  //     >
+  //       <div
+  //         className="card animate-fade-in-scale"
+  //         style={{
+  //           maxWidth: "460px",
+  //           width: "100%",
+  //           padding: "var(--space-8)",
+  //         }}
+  //       >
+  //         {/* Header */}
+  //         <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
+  //           <div
+  //             style={{
+  //               width: "64px",
+  //               height: "64px",
+  //               borderRadius: "50%",
+  //               background: "var(--color-warning-light)",
+  //               border: "2px solid var(--color-warning-border)",
+  //               display: "flex",
+  //               alignItems: "center",
+  //               justifyContent: "center",
+  //               fontSize: "1.8rem",
+  //               margin: "0 auto var(--space-4)",
+  //             }}
+  //           >
+  //             😊
+  //           </div>
+  //           <h2 style={{ fontSize: "1.3rem", marginBottom: "var(--space-2)" }}>
+  //             Verify Your Phone Number
+  //           </h2>
+  //           <p
+  //             style={{
+  //               fontSize: "0.875rem",
+  //               color: "var(--text-tertiary)",
+  //               lineHeight: 1.7,
+  //               maxWidth: "320px",
+  //               margin: "0 auto",
+  //             }}
+  //           >
+  //             You need to verify your account before accessing the Renter
+  //             dashboard.
+  //           </p>
+  //         </div>
 
+  //         {/* ─── Verifying Phone ─── */}
+  //         {/* Phone input with flag prefix */}
+  //         <div style={{ display: "flex" }}>
+  //           <span
+  //             style={{
+  //               display: "flex",
+  //               alignItems: "center",
+  //               background: "var(--bg-subtle)",
+  //               border: "1.5px solid var(--border-default)",
+  //               borderRight: "none",
+  //               borderRadius: "var(--radius-lg) 0 0 var(--radius-lg)",
+  //               padding: "0 var(--space-3)",
+  //               fontSize: "0.85rem",
+  //               fontWeight: 600,
+  //               color: "var(--text-secondary)",
+  //               whiteSpace: "nowrap",
+  //               flexShrink: 0,
+  //             }}
+  //           >
+  //             🇱🇰 +94
+  //           </span>
 
+  //           <input
+  //             value={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
+  //             onChange={(e) => set("phone", e.target.value)}
+  //             placeholder="77 123 4567"
+  //             type="tel"
+  //             className="input"
+  //             style={{
+  //               borderRadius: "0 var(--radius-lg) var(--radius-lg) 0",
+  //               borderLeft: "none",
+  //             }}
+  //           />
+  //         </div>
+  //         {/* Verify button — shows only if phone added but not verified */}
+  //         {(formatAndValidateSLNumber(form.phone) || isUserHaveAPhoneNumber)&& !profile?.phone_verified && (
+  //           <button
+  //             type="button"
+  //             onClick={() => setShowOtp(true)}
+  //             className="btn btn-primary btn-sm"
+  //             style={{ marginTop: "var(--space-2)", width: "100%" }}
+  //           >
+  //             📱 Verify Phone Number via OTP
+  //           </button>
+  //         )}
+
+  //         {showOtp && user && (
+  //           <div
+  //             style={{
+  //               position: "fixed",
+  //               inset: 0,
+  //               zIndex: 100,
+  //               background: "rgb(0 0 0 / 0.55)",
+  //               backdropFilter: "blur(4px)",
+  //               display: "flex",
+  //               alignItems: "center",
+  //               justifyContent: "center",
+  //               padding: "var(--space-4)",
+  //             }}
+  //           >
+  //             <OtpVerify
+  //               phone={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
+  //               userId={user.id}
+  //               onSuccess={async () => {
+  //                 setShowOtp(false);
+  //                 // Refetch profile to get updated verified status
+  //                 const { data } = await supabase
+  //                   .from("profiles")
+  //                   .select("*")
+  //                   .eq("id", user.id)
+  //                   .single();
+  //                 setProfile(data);
+  //                 setSaved(true);
+  //                 setTimeout(() => setSaved(false), 3000);
+  //               }}
+  //               onCancel={() => setShowOtp(false)}
+  //             />
+  //           </div>
+  //         )}
+
+  //         {/* ─── Verifying Phone ─── */}
+  //         <br />
+  //         {/* Logout option */}
+  //         <button
+  //           onClick={handleLogout}
+  //           className="btn btn-ghost btn-full"
+  //           style={{ marginTop: "var(--space-8)" }}
+  //         >
+  //           Logout
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
   if (!isVerified)
     return (
       <div
@@ -145,6 +301,41 @@ export default function Dashboard() {
           padding: "var(--space-6)",
         }}
       >
+        {/* OTP Modal — outside the card so it covers full screen */}
+        {showOtp && user && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 100,
+              background: "rgb(0 0 0 / 0.55)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "var(--space-4)",
+            }}
+          >
+            <OtpVerify
+              isGoogleLogin={isUserHaveAPhoneNumber ? false : true}
+              phone={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
+              userId={user.id}
+              onSuccess={async () => {
+                setShowOtp(false);
+                const { data } = await supabase
+                  .from("profiles")
+                  .select("*")
+                  .eq("id", user.id)
+                  .single();
+                setProfile(data);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+              }}
+              onCancel={() => setShowOtp(false)}
+            />
+          </div>
+        )}
+
         <div
           className="card animate-fade-in-scale"
           style={{
@@ -169,10 +360,10 @@ export default function Dashboard() {
                 margin: "0 auto var(--space-4)",
               }}
             >
-              🔒
+              😊
             </div>
             <h2 style={{ fontSize: "1.3rem", marginBottom: "var(--space-2)" }}>
-              Verify Your Account
+              Verify Your Phone Number
             </h2>
             <p
               style={{
@@ -188,235 +379,57 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* ─── Status steps ─── */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-3)",
-              marginBottom: "var(--space-6)",
-            }}
-          >
-            {/* Step 1 — Account created ✅ always done */}
-            <div
+          {/* Phone input with flag prefix */}
+          <div style={{ display: "flex" }}>
+            <span
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "var(--space-3)",
-                padding: "var(--space-3) var(--space-4)",
-                background: "var(--color-success-light)",
-                border: "1px solid var(--color-success-border)",
-                borderRadius: "var(--radius-lg)",
-              }}
-            >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: "var(--color-success)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  fontSize: "0.8rem",
-                  color: "white",
-                  fontWeight: 800,
-                }}
-              >
-                ✓
-              </div>
-              <div>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 700,
-                    color: "var(--color-success)",
-                  }}
-                >
-                  Account Created
-                </p>
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "var(--color-success)",
-                    opacity: 0.8,
-                  }}
-                >
-                  {user?.email}
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 — Phone number */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-3)",
-                padding: "var(--space-3) var(--space-4)",
-                background: profile?.phone
-                  ? "var(--color-success-light)"
-                  : "var(--color-warning-light)",
-                border: `1px solid ${
-                  profile?.phone
-                    ? "var(--color-success-border)"
-                    : "var(--color-warning-border)"
-                }`,
-                borderRadius: "var(--radius-lg)",
-              }}
-            >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: profile?.phone
-                    ? "var(--color-success)"
-                    : "var(--color-warning)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  fontSize: profile?.phone ? "0.8rem" : "0.9rem",
-                  color: "white",
-                  fontWeight: 800,
-                }}
-              >
-                {profile?.phone ? "✓" : "2"}
-              </div>
-              <div style={{ flex: 1 }}>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 700,
-                    color: profile?.phone
-                      ? "var(--color-success)"
-                      : "var(--color-warning)",
-                  }}
-                >
-                  {profile?.phone ? "Phone Number Added" : "Add Phone Number"}
-                </p>
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: profile?.phone
-                      ? "var(--color-success)"
-                      : "var(--color-warning)",
-                    opacity: 0.8,
-                  }}
-                >
-                  {profile?.phone
-                    ? `📞 ${profile.phone}`
-                    : "Required for verification and renter contact"}
-                </p>
-              </div>
-              {!profile?.phone && (
-                <span
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    color: "var(--color-warning)",
-                    background: "var(--color-warning-border)",
-                    padding: "2px 8px",
-                    borderRadius: "var(--radius-full)",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  Required
-                </span>
-              )}
-            </div>
-
-            {/* Step 3 — Verified */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-3)",
-                padding: "var(--space-3) var(--space-4)",
                 background: "var(--bg-subtle)",
-                border: "1px solid var(--border-default)",
-                borderRadius: "var(--radius-lg)",
-                opacity: 0.6,
+                border: "1.5px solid var(--border-default)",
+                borderRight: "none",
+                borderRadius: "var(--radius-lg) 0 0 var(--radius-lg)",
+                padding: "0 var(--space-3)",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: "var(--neutral-300)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  fontSize: "0.85rem",
-                  color: "white",
-                  fontWeight: 800,
-                }}
-              >
-                3
-              </div>
-              <div>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 700,
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  Account Verified
-                </p>
-                <p
-                  style={{ fontSize: "0.75rem", color: "var(--text-tertiary)" }}
-                >
-                  Unlocks vehicle listings and dashboard
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ─── Info note ─── */}
-          <div
-            style={{
-              background: "var(--color-primary-light)",
-              border: "1px solid var(--color-primary-border)",
-              borderRadius: "var(--radius-lg)",
-              padding: "var(--space-3) var(--space-4)",
-              marginBottom: "var(--space-5)",
-              display: "flex",
-              gap: "var(--space-2)",
-              alignItems: "flex-start",
-            }}
-          >
-            <span style={{ fontSize: "0.9rem", flexShrink: 0 }}>💡</span>
-            <p
+              🇱🇰 +94
+            </span>
+            <input
+              value={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder="77 123 4567"
+              type="tel"
+              className="input"
               style={{
-                fontSize: "0.78rem",
-                color: "var(--color-primary)",
-                lineHeight: 1.6,
+                borderRadius: "0 var(--radius-lg) var(--radius-lg) 0",
+                borderLeft: "none",
               }}
-            >
-              Adding your phone number <strong>instantly verifies</strong> your
-              account. (OTP verification will be required.)
-            </p>
+            />
           </div>
 
-          {/* ─── CTA ─── */}
-          <button
-            onClick={() => router.push("/seller/profile/edit")}
-            className="btn btn-primary btn-full btn-lg"
-          >
-            {profile?.phone ? "✏️ Update Profile" : "📞 Add Phone Number"}
-          </button>
+          {/* Verify button */}
+          {(formatAndValidateSLNumber(form.phone) || isUserHaveAPhoneNumber) &&
+            !profile?.phone_verified && (
+              <button
+                type="button"
+                onClick={() => setShowOtp(true)}
+                className="btn btn-primary btn-sm"
+                style={{ marginTop: "var(--space-2)", width: "100%" }}
+              >
+                📱 Verify Phone Number via OTP
+              </button>
+            )}
 
           {/* Logout option */}
           <button
             onClick={handleLogout}
             className="btn btn-ghost btn-full"
-            style={{ marginTop: "var(--space-3)" }}
+            style={{ marginTop: "var(--space-8)" }}
           >
             Logout
           </button>
@@ -500,12 +513,12 @@ export default function Dashboard() {
           style={{ padding: "var(--space-2) var(--space-4)" }}
         >
           <Link
-          href="/"
-          className="btn btn-ghost btn-sm"
-          style={{ marginBottom: "var(--space-2)", display: "inline-flex" }}
-        >
-          {"←"} Back to Home  
-        </Link>
+            href="/"
+            className="btn btn-ghost btn-sm"
+            style={{ marginBottom: "var(--space-2)", display: "inline-flex" }}
+          >
+            {"←"} Back to Home
+          </Link>
           {/* ─── PROFILE CARD ─── */}
           <div
             className="card card-p"

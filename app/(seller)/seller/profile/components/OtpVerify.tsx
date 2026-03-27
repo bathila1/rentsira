@@ -6,11 +6,13 @@ import { supabase } from "@/utils/supabase";
 export default function OtpVerify({
   phone,
   userId,
+  isGoogleLogin,
   onSuccess,
   onCancel,
 }: {
   phone: string;
   userId: string;
+  isGoogleLogin: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }) {
@@ -48,13 +50,28 @@ export default function OtpVerify({
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
       setSent(true);
-      setCountdown(60);
+      setCountdown(120);
       // Focus first input after SMS sent
       setTimeout(() => inputRefs.current[0]?.focus(), 300);
     } catch (err: any) {
       setError(err.message || "Failed to send OTP");
     } finally {
       setSending(false);
+      //upload phone number if phone number is not uploaded(google login)
+      if (isGoogleLogin) {
+        //should upload the phone
+        const { error } = await supabase.from("profiles").upsert({
+          id: userId,
+          phone,
+          phone_verified: true,
+          phone_verified_at: new Date().toISOString(),
+        });
+        if (error) {
+          setError(error.message);
+        } else {
+          onSuccess();
+        }
+      }
     }
   };
 
@@ -104,6 +121,8 @@ export default function OtpVerify({
       setOtp(["", "", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
+      // verified successfull
+
       setVerifying(false);
     }
   };

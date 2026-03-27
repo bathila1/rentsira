@@ -368,6 +368,7 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
 
 /* Sizes */
 .btn-sm { padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: var(--radius-md); }
+.btn-esm { padding: 0.3rem 0.70rem; font-size: 0.7rem; border-radius: var(--radius-md); }
 .btn-lg { padding: 0.85rem 1.75rem; font-size: 0.95rem; }
 .btn-full { width: 100%; }
 
@@ -1188,3 +1189,61 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
   animation: pulse-slow 2.5s ease-in-out infinite;
 }
 /* loader.tsx */
+
+
+/* Base badge styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Modern Badge Component --- */
+
+/* Base container for the badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 99px; /* Pill shape */
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+/* Internal dot indicator */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Verified State (Green) */
+.status-badge.is-verified {
+  background-color: #ecfdf5; /* Very light green */
+  color: #065f46;            /* Dark forest green */
+  border: 1px solid #a7f3d0;
+}
+
+.status-badge.is-verified .status-dot {
+  background-color: #10b981; /* Emerald green dot */
+}
+
+/* Unverified State (Gray/Neutral) */
+.status-badge.is-unverified {
+  background-color: #f3f4f6; /* Light gray */
+  color: #374151;            /* Dark slate gray */
+  border: 1px solid #e5e7eb;
+}
+
+.status-badge.is-unverified .status-dot {
+  background-color: #9ca3af; /* Soft gray dot */
+}
