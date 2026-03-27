@@ -46,6 +46,9 @@ export function sanitizeEmail(input: string): string | boolean{
 
 // phone validator fun
   export function formatAndValidateSLNumber(input: string): string | boolean {
+    if (/[a-zA-Z]/.test(input)) {
+      return false;
+    }
     // 1. Remove everything except numbers
     let cleaned = input.replace(/\D/g, "");
 

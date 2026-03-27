@@ -2,18 +2,25 @@
 
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
+import { useRouter } from "next/navigation";
+
 
 export default function OtpVerify({
   phone,
   userId,
+  isGoogleLogin,
   onSuccess,
   onCancel,
 }: {
   phone: string;
   userId: string;
+  isGoogleLogin: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }) {
+  
+  const router = useRouter();
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -22,6 +29,8 @@ export default function OtpVerify({
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  
+  
   // Auto-send OTP when component mounts (one time)
   const hasSent = useRef(false);
   useEffect(() => {
@@ -43,12 +52,12 @@ export default function OtpVerify({
     try {
       // ─── Check session first ───
       const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { phone, user_id: userId },
+        body: { phone: phone, user_id: userId },
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
       setSent(true);
-      setCountdown(60);
+      setCountdown(120);
       // Focus first input after SMS sent
       setTimeout(() => inputRefs.current[0]?.focus(), 300);
     } catch (err: any) {
@@ -104,9 +113,33 @@ export default function OtpVerify({
       setOtp(["", "", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
+      // verified successfull
+
       setVerifying(false);
+
+      //upload phone number if phone number is not uploaded(google login)
+      if (isGoogleLogin) {
+        //should upload the phone
+        const { error } = await supabase.from("profiles").upsert({
+          id: userId,
+          phone,
+          phone_verified: true,
+          phone_verified_at: new Date().toISOString(),
+        });
+        if (error) {
+          setError(error.message);
+        } else {
+          onSuccess();
+        }
+      }
     }
   };
+
+  const handleLogout = async () => {
+   await supabase.auth.signOut();
+   router.push("/");
+   router.refresh();
+ };
 
   return (
     <div
@@ -283,8 +316,8 @@ export default function OtpVerify({
       </p>
 
       {/* Cancel */}
-      <button onClick={onCancel} className="btn btn-ghost btn-full btn-sm">
-        Cancel
+      <button onClick={handleLogout} className="btn btn-ghost btn-full btn-sm">
+        Logout
       </button>
     </div>
   );
