@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
+import { useRouter } from "next/navigation";
+
 
 export default function OtpVerify({
   phone,
@@ -16,6 +18,9 @@ export default function OtpVerify({
   onSuccess: () => void;
   onCancel: () => void;
 }) {
+  
+  const router = useRouter();
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -24,6 +29,8 @@ export default function OtpVerify({
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  
+  
   // Auto-send OTP when component mounts (one time)
   const hasSent = useRef(false);
   useEffect(() => {
@@ -127,6 +134,12 @@ export default function OtpVerify({
       }
     }
   };
+
+  const handleLogout = async () => {
+   await supabase.auth.signOut();
+   router.push("/");
+   router.refresh();
+ };
 
   return (
     <div
@@ -303,8 +316,8 @@ export default function OtpVerify({
       </p>
 
       {/* Cancel */}
-      <button onClick={onCancel} className="btn btn-ghost btn-full btn-sm">
-        Cancel
+      <button onClick={handleLogout} className="btn btn-ghost btn-full btn-sm">
+        Logout
       </button>
     </div>
   );
