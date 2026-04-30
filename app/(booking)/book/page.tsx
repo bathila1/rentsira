@@ -70,7 +70,11 @@ export default function BookingRequestPage() {
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/submit-booking`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`, // ← ADD THIS
+
+           },
+
           body: JSON.stringify({
             renter_name:     form.renter_name,
             renter_phone:    form.renter_phone,
@@ -98,7 +102,7 @@ export default function BookingRequestPage() {
     }
   }
 
-  if (success) {
+  if (!success) {
     return (
       <main style={{ minHeight: '100vh', background: 'var(--neutral-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-6)' }}>
         <div className="container-sm" style={{ textAlign: 'center' }}>
@@ -106,7 +110,7 @@ export default function BookingRequestPage() {
             width: 72,
             height: 72,
             borderRadius: '50%',
-            background: 'var(--color-primary)',
+            background: 'rgb(0, 255, 128)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
