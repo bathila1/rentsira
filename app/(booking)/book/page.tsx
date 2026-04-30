@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from '@/utils/supabase';
-import { sanitizeText } from '@/utils/sanitize';
-import { SriLankanDistricts, dynamicData } from '@/settings';
+import { SriLankanDistricts, dynamicData, settingsData } from '@/settings';
+import BackButton from '@/app/(user)/explore/[id]/components/BackBtn';
 
 type FormState = {
   renter_name: string;
@@ -66,21 +66,28 @@ export default function BookingRequestPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      const { error: insertError } = await supabase.from('booking_requests').insert({
-        renter_name: sanitizeText(form.renter_name),
-        renter_phone: sanitizeText(form.renter_phone),
-        vehicle_type: sanitizeText(form.vehicle_type),
-        pickup_district: sanitizeText(form.pickup_district),
-        pickup_date: form.pickup_date,
-        return_date: form.return_date,
-        with_driver: form.with_driver,
-        seat_count: form.seat_count ? parseInt(form.seat_count) : null,
-        notes: form.notes ? sanitizeText(form.notes) : null,
-        status: 'pending',
-        user_id: user?.id ?? null,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/submit-booking`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            renter_name:     form.renter_name,
+            renter_phone:    form.renter_phone,
+            vehicle_type:    form.vehicle_type,
+            pickup_district: form.pickup_district,
+            pickup_date:     form.pickup_date,
+            return_date:     form.return_date,
+            with_driver:     form.with_driver,
+            seat_count:      form.seat_count || null,
+            notes:           form.notes || null,
+            user_id:         user?.id ?? null,
+          }),
+        }
+      );
 
-      if (insertError) throw insertError;
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error ?? 'Submission failed.');
 
       setSuccess(true);
       setForm(INITIAL_FORM);
@@ -109,6 +116,7 @@ export default function BookingRequestPage() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
+          
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--neutral-950)', marginBottom: 'var(--space-3)' }}>
             Request Submitted!
           </h1>
@@ -125,6 +133,7 @@ export default function BookingRequestPage() {
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--neutral-50)' }}>
+
       {/* Hero */}
       <div style={{
         background: 'var(--neutral-950)',
@@ -141,6 +150,7 @@ export default function BookingRequestPage() {
           height: 4,
           background: 'var(--color-primary)',
         }} />
+        
         <div style={{
           position: 'absolute',
           right: -80,
@@ -153,34 +163,120 @@ export default function BookingRequestPage() {
         }} />
 
         <div className="container-sm">
-          <span style={{
-            display: 'inline-block',
-            background: 'rgba(248,50,50,0.15)',
-            color: 'var(--color-primary)',
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            padding: '4px 12px',
-            borderRadius: 'var(--radius-full)',
-            marginBottom: 'var(--space-4)',
-          }}>
-            Find a Vehicle
-          </span>
+        <BackButton/>
+
           <h1 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
             color: '#fff',
             lineHeight: 1.15,
             marginBottom: 'var(--space-3)',
+            
           }}>
             Tell us what you need.<br />
             <span style={{ color: 'var(--color-primary)' }}>We'll find for u.</span>
           </h1>
-          <p style={{ color: 'var(--neutral-400)', maxWidth: 480, lineHeight: 1.6 }}>
-            Submit your requirements and our team will source the perfect vehicle for your trip — no hassle, no searching.
-          </p>
+
+<div style={{ marginTop: 'var(--space-6)' }}>
+  <a
+    href={`tel:${settingsData.phone2}`}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 12,
+      padding: '14px 24px',
+      background: 'rgba(255,255,255,0.06)',
+      border: '1.5px solid rgba(255,255,255,0.15)',
+      borderRadius: 'var(--radius-full)',
+      textDecoration: 'none',
+      backdropFilter: 'blur(8px)',
+      cursor: 'pointer',
+      transition: 'all 0.25s ease',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+    onMouseEnter={e => {
+      const el = e.currentTarget;
+      el.style.background = 'rgba(248,50,50,0.15)';
+      el.style.borderColor = 'var(--color-primary)';
+      el.style.transform = 'translateY(-1px)';
+      el.style.boxShadow = '0 8px 32px rgba(248,50,50,0.2)';
+    }}
+    onMouseLeave={e => {
+      const el = e.currentTarget;
+      el.style.background = 'rgba(255,255,255,0.06)';
+      el.style.borderColor = 'rgba(255,255,255,0.15)';
+      el.style.transform = 'translateY(0)';
+      el.style.boxShadow = 'none';
+    }}
+  >
+    {/* Animated ping dot */}
+    <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36 }}>
+      <span style={{
+        position: 'absolute',
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        background: 'rgba(227, 0, 0, 0.53)',
+        animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite',
+      }} />
+      <span style={{
+        position: 'relative',
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, rgb(66, 255, 249) 0%,rgba(60, 255, 0, 0.8))',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.64A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      </span>
+    </span>
+
+    <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <span style={{
+        color: 'rgba(255,255,255,0.5)',
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        lineHeight: 1,
+      }}>
+        Prefer to call?
+      </span>
+      <span style={{
+        color: '#fff',
+        fontFamily: 'var(--font-display)',
+        fontSize: '1.05rem',
+        fontWeight: 600,
+        letterSpacing: '0.02em',
+        lineHeight: 1,
+      }}>
+        {settingsData.phone1}
+      </span>
+    </span>
+
+    {/* Arrow */}
+    <svg
+      width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="rgba(255,255,255,0.4)"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ marginLeft: 4 }}
+    >
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </a>
+</div>
+
+<style>{`
+  @keyframes ping {
+    75%, 100% { transform: scale(1.8); opacity: 0; }
+  }
+`}</style>
         </div>
       </div>
 

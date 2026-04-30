@@ -60,7 +60,7 @@ export default function AdminBookingsPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
       if (user?.email && user.email === adminEmail) {
-        setIsAdmin(true);
+        setIsAdmin(true);   
       }
       setAuthChecked(true);
     });
