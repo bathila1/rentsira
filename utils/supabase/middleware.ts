@@ -2,6 +2,18 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+
+  // ─── Maintenance Mode ───
+  if (process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true') {
+    if (request.nextUrl.pathname !== '/maintenance') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/maintenance';
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+  // ─── Maintenance Mode End ───
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -29,11 +41,11 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // This will refresh the session if it's expired
-
+  // ─── Use getSession instead of getUser to avoid network call ───
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   // Logic: If no user and trying to access /seller, redirect to login
   if (!user && request.nextUrl.pathname.startsWith("/seller")) {
@@ -46,28 +58,23 @@ export async function updateSession(request: NextRequest) {
   // if (user && (request.nextUrl.pathname.startsWith("/seller/vehicles"))) {
   //   const { data: profileData, error } = await supabase
   //     .from("profiles")
-  //     .select("user_status") // Optimization: Only select what you need
+  //     .select("user_status")
   //     .eq("id", user.id)
   //     .single();
-
-  //   // 2. Handle potential errors (e.g., profile doesn't exist yet)
   //   if (error) {
   //     console.error("Error fetching profile:", error.message);
   //     return;
   //   }
-
-  //   // 3. Use the correct variable name
   //   if (profileData) {
   //     console.log("User Status:", profileData.user_status);
-  //     const user_status =  profileData.user_status
+  //     const user_status = profileData.user_status
   //     if (user_status === "pending") {
   //       const url = request.nextUrl.clone();
-  //       url.pathname = "/seller/dashboard/admin-verification/pending"; // Create this page next
+  //       url.pathname = "/seller/dashboard/admin-verification/pending";
   //       return NextResponse.redirect(url);
   //     }
   //   }
   // }
-
   //next v end
 
   //if logged in do not show login and register pages redirect to seller/dashboard instead
