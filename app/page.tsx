@@ -172,7 +172,7 @@ export default async function Home() {
 
 <div>
               <p style={{ color: 'white', maxWidth: 480, lineHeight: 1.6, marginBottom: 'var(--space-3)', marginLeft: 'auto', marginRight: 'auto' }}>
-               Or
+               <b>Or</b>
               </p>
 </div>
 
