@@ -102,7 +102,7 @@ export default function BookingRequestPage() {
     }
   }
 
-  if (!success) {
+  if (success) {
     return (
       <main style={{ minHeight: '100vh', background: 'var(--neutral-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-6)' }}>
         <div className="container-sm" style={{ textAlign: 'center' }}>
