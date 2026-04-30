@@ -125,7 +125,7 @@ export default function BookingRequestPage() {
             Request Submitted!
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)', lineHeight: 1.6 }}>
-            We've received your vehicle request. Our team will review it and get back to you as soon as possible via phone.
+            We've received your vehicle request. Our team will Call you shortly.
           </p>
           <button className="btn btn-primary" onClick={() => setSuccess(false)}>
             Submit Another Request

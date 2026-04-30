@@ -59,6 +59,8 @@ export default function AdminBookingsPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      console.log('Current user:', user);
+      console.log('Admin email:', adminEmail);
       if (user?.email && user.email === adminEmail) {
         setIsAdmin(true);   
       }
