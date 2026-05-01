@@ -7,35 +7,37 @@ import Header from "@/components/Header";
 
 import type { Metadata } from "next";
 import BackButton from "./[id]/components/BackBtn";
+import RequestButton from "@/components/RequestButton";
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | undefined }>
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }): Promise<Metadata> {
-  const params = await searchParams
+  const params = await searchParams;
 
-  const parts: string[] = []
+  const parts: string[] = [];
 
-  if (params.make)     parts.push(params.make)
-  if (params.model)    parts.push(params.model)
-  if (params.type)     parts.push(params.type)
-  if (params.year)     parts.push(params.year)
-  if (params.district) parts.push(`in ${params.district}`)
-  if (params.fuel_type) parts.push(params.fuel_type)
-  if (params.with_driver === 'true')  parts.push('With Driver')
-  if (params.with_driver === 'false') parts.push('Without Driver')
-  if (params.seat_count)   parts.push(`${params.seat_count} seats`)
+  if (params.make) parts.push(params.make);
+  if (params.model) parts.push(params.model);
+  if (params.type) parts.push(params.type);
+  if (params.year) parts.push(params.year);
+  if (params.district) parts.push(`in ${params.district}`);
+  if (params.fuel_type) parts.push(params.fuel_type);
+  if (params.with_driver === "true") parts.push("With Driver");
+  if (params.with_driver === "false") parts.push("Without Driver");
+  if (params.seat_count) parts.push(`${params.seat_count} seats`);
 
+  const title =
+    parts.length > 0
+      ? `${parts.join(" ")} for Rent`
+      : "Explore Vehicles for Rent";
 
-  const title = parts.length > 0
-    ? `${parts.join(' ')} for Rent`
-    : 'Explore Vehicles for Rent'
+  const description =
+    parts.length > 0
+      ? `Find ${parts.join(" ")} rental vehicles in Sri Lanka on SIRAA. Compare rates and contact Renters directly.`
+      : "Browse hundreds of vehicles for rent across all 25 districts in Sri Lanka.";
 
-  const description = parts.length > 0
-    ? `Find ${parts.join(' ')} rental vehicles in Sri Lanka on SIRAA. Compare rates and contact Renters directly.`
-    : 'Browse hundreds of vehicles for rent across all 25 districts in Sri Lanka.'
-
-  return { title, description }
+  return { title, description };
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -66,43 +68,43 @@ export default async function ExplorePage({
   const supabase = await createClient();
   const params = await searchParams;
 
-  const page       = parseInt(params.page || '1')
-const type       = params.type        || ''
-const district   = params.district    || ''
-const withDriver = params.with_driver || ''
-const userLat    = params.lat  ? parseFloat(params.lat)  : null
-const userLng    = params.lng  ? parseFloat(params.lng)  : null
+  const page = parseInt(params.page || "1");
+  const type = params.type || "";
+  const district = params.district || "";
+  const withDriver = params.with_driver || "";
+  const userLat = params.lat ? parseFloat(params.lat) : null;
+  const userLng = params.lng ? parseFloat(params.lng) : null;
 
-// ─── AI search params ───
-const make       = params.make        || ''
-const model      = params.model       || ''
-const year       = params.year        || ''
-const fuelType   = params.fuel_type   || ''
-const description = params.description || ''
-const seat_count = params.seat_count || ''
-
+  // ─── AI search params ───
+  const make = params.make || "";
+  const model = params.model || "";
+  const year = params.year || "";
+  const fuelType = params.fuel_type || "";
+  const description = params.description || "";
+  const seat_count = params.seat_count || "";
 
   // let query = supabase
   //   .from("uploaded_rent_vehicles")
   //   .select("*", { count: "exact" });
 
   // ✅ AFTER — all fields supported
-let query = supabase.from('uploaded_rent_vehicles').select('*', { count: 'exact' })
+  let query = supabase
+    .from("uploaded_rent_vehicles")
+    .select("*", { count: "exact" });
 
-// Filter bar params
-if (type)                   query = query.ilike('type', type)
-if (district)               query = query.ilike('district', district)
-if (withDriver === 'true')  query = query.eq('with_driver', true)
-if (withDriver === 'false') query = query.eq('with_driver', false)
+  // Filter bar params
+  if (type) query = query.ilike("type", type);
+  if (district) query = query.ilike("district", district);
+  if (withDriver === "true") query = query.eq("with_driver", true);
+  if (withDriver === "false") query = query.eq("with_driver", false);
 
-// AI search params
-if (make)        query = query.ilike('make',        `%${make}%`)
-if (model)       query = query.ilike('model',       `%${model}%`)
-if (year)        query = query.eq('year',           parseInt(year))
-if (fuelType)    query = query.ilike('fuel_type',   fuelType)
-if (seat_count)   query = query.eq('seat_count',     parseInt(seat_count))
-if (description) query = query.ilike('description', `%${description}%`)
-  
+  // AI search params
+  if (make) query = query.ilike("make", `%${make}%`);
+  if (model) query = query.ilike("model", `%${model}%`);
+  if (year) query = query.eq("year", parseInt(year));
+  if (fuelType) query = query.ilike("fuel_type", fuelType);
+  if (seat_count) query = query.eq("seat_count", parseInt(seat_count));
+  if (description) query = query.ilike("description", `%${description}%`);
 
   let vehicles: any[] = [];
   let totalPages = 1;
@@ -151,7 +153,7 @@ if (description) query = query.ilike('description', `%${description}%`)
         >
           {"←"} Back
         </Link> */}
-        <BackButton/>
+        <BackButton />
 
         {/* ─── Page Header ─── */}
         <div style={{ marginBottom: "var(--space-6)" }}>
@@ -205,11 +207,14 @@ if (description) query = query.ilike('description', `%${description}%`)
         {/* ─── Empty State ─── */}
         {vehicles.length === 0 ? (
           <div className="empty-state">
+            <div>
+              <RequestButton/>
+              <p className="empty-state-sub">
+                Submit a request We will find a perfect match for you as soon as
+                possible
+              </p>
+            </div>
             <span className="empty-state-icon">🚘</span>
-            <p className="empty-state-title">No vehicles found</p>
-            <p className="empty-state-sub">
-              Try adjusting or clearing your filters
-            </p>
           </div>
         ) : (
           // ─── Vehicle Grid ───
