@@ -10,9 +10,9 @@ import BackButton from "./components/BackBtn";
 const SiteDomain = process.env.NEXT_PUBLIC_SITE_URL || "";
 
 // Normalizes any Sri Lankan phone format to WhatsApp-ready international format
-function toWAPhone(phone: string): string {
+function toWAPhone(phone: string | null | undefined): string {
   // Remove everything except digits
-  let digits = phone.replace(/\D/g, "");
+  let digits = phone?.replace(/\D/g, "") || "";
 
   // Remove leading 0  → 0771234567 becomes 771234567
   if (digits.startsWith("0")) digits = digits.slice(1);
@@ -48,7 +48,9 @@ export async function generateMetadata({
 
   const title = `${vehicle.make} ${vehicle.model} (${vehicle.year}) for Rent in ${vehicle.district}`;
   const description = `Rent a ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()}/day. ${vehicle.with_driver ? "With Driver." : "Without Driver."} ${vehicle.fuel_type}. Book now on SIRAA.`;
-  const image = vehicle.image_urls?.[0] || `https://cdn.jsdelivr.net/gh/bathila1/web-assets/og-default.jpg`;
+  const image =
+    vehicle.image_urls?.[0] ||
+    `https://cdn.jsdelivr.net/gh/bathila1/web-assets/og-default.jpg`;
 
   return {
     title,
@@ -85,20 +87,25 @@ export default async function VehicleDetailPage({
     .eq("id", id)
     .single();
 
-  if (vehicle) {
-    supabase.rpc("increment_view_count", { vehicle_id: id });
-  }
-
   if (error || !vehicle) notFound();
 
   const { data: sellerProfile } = await supabase
     .from("profiles")
-    .select("full_name, phone")
+    .select("full_name, phone, phoneWhatsapp")
     .eq("id", vehicle.seller_id)
     .single();
+  
+  // get phoneWhatsapp from the auth user if not available in profile (for google login)
+  if (sellerProfile && !sellerProfile.phoneWhatsapp) {
+    const { data: authUser } = await supabase.auth.getUser(vehicle.seller_id);
+
+    console.log("Seller Profile:", sellerProfile); // Debug log for seller profile
+    console.log("Auth User:", authUser); // Debug log for auth user
+  }
 
   const sellerName = sellerProfile?.full_name || "Renter";
   const sellerPhone = sellerProfile?.phone || null;
+  const sellerWhatsappPhone = sellerProfile?.phoneWhatsapp || null;
 
   const rates = [
     { label: "Daily Rate", value: vehicle.daily_rate, icon: "📅" },
@@ -137,7 +144,7 @@ export default async function VehicleDetailPage({
         }}
       >
         {/* ─── BACK ─── back */}
-       <BackButton/>
+        <BackButton />
         {/* ─── TOP GRID ─── */}
         <div
           style={{
@@ -377,32 +384,34 @@ export default async function VehicleDetailPage({
                   </a>
 
                   {/* WhatsApp */}
-                  <a
-                    href={`https://wa.me/${toWAPhone(sellerPhone)}?text=${encodeURIComponent(
-                      `Hi! I'm interested in your ${vehicle.make} ${vehicle.model} (${vehicle.year}) listed on SIRAA. Is it still available?`,
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-full btn-lg"
-                    style={{
-                      textDecoration: "none",
-                      justifyContent: "center",
-                      background: "#25D366",
-                      color: "white",
-                      boxShadow: "0 4px 14px 0 rgb(37 211 102 / 0.3)",
-                    }}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="white"
+                  {sellerWhatsappPhone && (
+                    <a
+                      href={`https://wa.me/${toWAPhone(sellerWhatsappPhone)}?text=${encodeURIComponent(
+                        `Hi! I'm interested in your ${vehicle.make} ${vehicle.model} (${vehicle.year}) listed on SIRAA. Is it still available for rent?`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-full btn-lg"
+                      style={{
+                        textDecoration: "none",
+                        justifyContent: "center",
+                        background: "#25D366",
+                        color: "white",
+                        boxShadow: "0 4px 14px 0 rgb(37 211 102 / 0.3)",
+                      }}
                     >
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.842L.057 23.571a.75.75 0 0 0 .921.921l5.733-1.452A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 0 1-4.953-1.355l-.355-.211-3.683.933.951-3.68-.23-.373A9.712 9.712 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z" />
-                    </svg>
-                    WhatsApp
-                  </a>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="white"
+                      >
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.842L.057 23.571a.75.75 0 0 0 .921.921l5.733-1.452A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 0 1-4.953-1.355l-.355-.211-3.683.933.951-3.68-.23-.373A9.712 9.712 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z" />
+                      </svg>
+                      WhatsApp
+                    </a>
+                  )}  
                 </div>
               ) : (
                 <div

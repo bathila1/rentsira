@@ -1,23 +1,15 @@
 Next Steps
 
-photo ekak replace weddi kalin tibba eka db eken remove kirima check
-seo
-admin panel
-bump up
-
 rate limits
 security sql ineject/ bla bla
 
-accepting and rejecting a vehicle post
-
-no results nm mona hri pennima
-
 
 register unata psse name ek wenas wenna dana eka
-
-
-homepage lag
-
 whatsapp no -> add a separate number for whatsapp
+forget password
 
 
+accepting and rejecting a vehicle post
+admin panel
+guide
+bump up payment gate way

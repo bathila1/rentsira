@@ -41,8 +41,10 @@ export default function RegisterClient() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    phoneWhatsapp: "",
     email: "",
     password: "",
+    passwordConfirm: "",
   });
   const [loading, setLoading] = useState(false);
   const [gLoading, setGLoading] = useState(false);
@@ -56,6 +58,9 @@ export default function RegisterClient() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // move to top for better readability of validation errors
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
     const formattedPhone = formatAndValidateSLNumber(form.phone);
     if (!formattedPhone) {
@@ -77,12 +82,19 @@ export default function RegisterClient() {
       return;
     }
 
+    if (form.password !== form.passwordConfirm) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase.functions.invoke("sign-up-seller", {
       body: {
         email: sanitizedEmailForm, // Use the sanitized version
         password: form.password,
         name: sanitizeText(form.name), // Use the sanitized version
         phone: formattedPhone,
+        phoneWhatsapp: formatAndValidateSLNumber(form.phoneWhatsapp) || formattedPhone,
       },
     });
 
@@ -279,6 +291,42 @@ export default function RegisterClient() {
             </div>
           </div>
 
+          <div className="form-group">
+            <label className="form-label">
+              Whatsapp Number <span className="required">*</span>
+            </label>
+            <div style={{ display: "flex" }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 var(--space-3)",
+                  background: "var(--bg-subtle)",
+                  border: "1.5px solid var(--border-default)",
+                  borderRight: "none",
+                  borderRadius: "var(--radius-lg) 0 0 var(--radius-lg)",
+                  fontSize: "0.85rem",
+                  color: "var(--text-secondary)",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                🇱🇰 +94
+              </span>
+              <input
+                type="tel"
+                value={form.phoneWhatsapp}
+                onChange={(e) => set("phoneWhatsapp", e.target.value)}
+                placeholder="77 123 4567"
+                required
+                className="input"
+                style={{
+                  borderRadius: "0 var(--radius-lg) var(--radius-lg) 0",
+                }}
+              />
+            </div>
+          </div>
+
           <div className="divider" style={{ margin: 0 }} />
 
           <div className="form-group">
@@ -352,6 +400,20 @@ export default function RegisterClient() {
                     : "Strong password ✓"}
             </p>
           </div>
+          <div>
+            {/* confirm password */}
+            <label className="form-label">
+              Confirm Password <span className="required">*</span>
+            </label>
+            <input
+              type="password"
+              value={form.passwordConfirm}
+              onChange={(e) => set("passwordConfirm", e.target.value)}
+              placeholder="Re-enter your password"
+              required
+              className="input"
+            />
+          </div>
 
           <p
             style={{
@@ -371,6 +433,7 @@ export default function RegisterClient() {
             </span>
           </p>
 
+          {/* Submit Button */ }
           <button
             type="submit"
             disabled={loading || success}

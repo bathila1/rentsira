@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase'
 import { settingsData } from '@/settings'
-import { sanitizeText } from '@/utils/sanitize'
+import { sanitizeText, formatAndValidateSLNumber } from '@/utils/sanitize'
 
 export default function EditProfilePage() {
   const router = useRouter()
   const [user,    setUser]    = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [form,    setForm]    = useState({ full_name: '', phone: '', bio: '' })
+  const [form,    setForm]    = useState({ full_name: '', phone: '', bio: '', phoneWhatsapp: '' })
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState(false)
   const [saved,   setSaved]   = useState(false)
@@ -23,14 +23,18 @@ export default function EditProfilePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       setUser(user)
+      console.log('Loaded user:', user)
       const { data } = await supabase
         .from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         setProfile(data)
+        var phoneWhatsapp = user.user_metadata.phoneWhatsapp || data.phoneWhatsapp || ''
+        if (data.phoneWhatsapp === null){phoneWhatsapp = user.user_metadata.phoneWhatsapp || ''}else{phoneWhatsapp = data.phoneWhatsapp || ''}
         setForm({
           full_name: data.full_name || '',
           phone:     data.phone     || '',
           bio:       data.bio       || '',
+          phoneWhatsapp:  phoneWhatsapp,
         })
       }
       setLoading(false)
@@ -45,15 +49,18 @@ export default function EditProfilePage() {
     const { error } = await supabase.from('profiles').upsert({
       id:         user.id,
       full_name:  sanitizeText(form.full_name),
-      phone:      form.phone,
+      phone:      formatAndValidateSLNumber(form.phone),
       bio:        sanitizeText(form.bio),
       updated_at: new Date().toISOString(),
+      phoneWhatsapp:  formatAndValidateSLNumber(form.phoneWhatsapp),
     })
 
     setSaving(false)
     if (error) { alert(error.message); return }
     setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+
+    //redirect to dashboard after 1.5 seconds
+    setTimeout(() => router.push('/seller/dashboard'), 1300)
   }
 
   if (loading) return (
@@ -97,9 +104,6 @@ export default function EditProfilePage() {
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <p className="label" style={{ marginBottom: 'var(--space-1)' }}>Account</p>
           <h1>Edit Profile</h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
-            {user?.email}
-          </p>
         </div>
 
         {/* ─── Avatar Card ─── */}
@@ -129,7 +133,7 @@ export default function EditProfilePage() {
             </p>
             {isVerified && (
               <span className="badge badge-green" style={{ marginTop: 'var(--space-1)' }}>
-                ✅ Verified Seller
+                ✅ Verified Renter
               </span>
             )}
           </div>
@@ -197,16 +201,46 @@ export default function EditProfilePage() {
                 </p>
               )}
             </div>
+            
+
+            {/* whatsapp */}
+            <div className="form-group">
+              <label className="form-label">
+                Whatsapp Number
+              </label>
+              <div style={{ display: 'flex' }}>
+                <span style={{
+                  display: 'flex', alignItems: 'center',
+                  background: 'var(--bg-subtle)',
+                  border: '1.5px solid var(--border-default)',
+                  borderRight: 'none',
+                  borderRadius: 'var(--radius-lg) 0 0 var(--radius-lg)',
+                  padding: '0 var(--space-3)',
+                  fontSize: '0.85rem', fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                }}>
+                  🇱🇰 +94
+                </span>
+                <input
+                  value={form.phoneWhatsapp}
+                  onChange={(e) => set('phoneWhatsapp', e.target.value)}
+                  placeholder=""
+                  type="tel"
+                  className="input"
+                  style={{ borderRadius: '0 var(--radius-lg) var(--radius-lg) 0' }}
+                />
+              </div>
+            </div>
 
             {/* Bio */}
             <div className="form-group">
               <label className="form-label">
-                Bio <span className="optional">(optional)</span>
+                Description <span className="optional">(optional)</span>
               </label>
               <textarea
                 value={form.bio}
                 onChange={(e) => set('bio', e.target.value)}
-                placeholder="e.g. Reliable vehicle owner based in Kurunegala..."
                 rows={3}
                 className="input textarea"
               />

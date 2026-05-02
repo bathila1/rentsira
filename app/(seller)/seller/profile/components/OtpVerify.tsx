@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 
 export default function OtpVerify({
   phone,
+  phoneWhatsapp,
   userId,
   isGoogleLogin,
   onSuccess,
   onCancel,
 }: {
   phone: string;
+  phoneWhatsapp: string;
   userId: string;
   isGoogleLogin: boolean;
   onSuccess: () => void;
@@ -103,7 +105,7 @@ export default function OtpVerify({
     setError("");
     try {
       const { data, error } = await supabase.functions.invoke("verify-otp", {
-        body: { otp_code: code, user_id: userId, phone },
+        body: { otp_code: code, user_id: userId, phone, phoneWhatsapp },
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || "Invalid code");
@@ -112,7 +114,7 @@ export default function OtpVerify({
       setError(err.message);
       setOtp(["", "", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
-    } finally {
+    } finally { 
       // verified successfull
 
       setVerifying(false);
@@ -123,6 +125,7 @@ export default function OtpVerify({
         const { error } = await supabase.from("profiles").upsert({
           id: userId,
           phone,
+          phoneWhatsapp,
           phone_verified: true,
           phone_verified_at: new Date().toISOString(),
         });

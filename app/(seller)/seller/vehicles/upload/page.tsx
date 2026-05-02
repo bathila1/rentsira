@@ -126,7 +126,7 @@ export default function UploadVehiclePage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Please log in first.");
       const uploadedUrls: string[] = [];
-      const MAX_SIZE_MB = 5;
+      const MAX_SIZE_MB = 15;
       const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
       for (const file of slots) {
@@ -143,7 +143,7 @@ export default function UploadVehiclePage() {
         // ─── Validate size ───
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           throw new Error(
-            `${file.name} is too large. Max size is ${MAX_SIZE_MB}MB.`,
+            `File is too large. upload failed: ${file.name}. Choose a different image.`,
           );
         }
 
@@ -269,7 +269,7 @@ export default function UploadVehiclePage() {
             className="btn btn-ghost btn-sm"
             style={{ flexShrink: 0 }}
           >
-            {"←"} Dashboard
+            {"←"} Back
           </button>
         </div>
 

@@ -103,6 +103,8 @@ const Footer = () => {
           }}
         >
           <Link
+            target="_blank"
+            rel="noopener noreferrer"
             href={settingsData.FooterTextLink}
             style={{ color: "var(--neutral-500)" }}
           >

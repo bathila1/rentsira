@@ -39,8 +39,8 @@ export default function EditImagesPage() {
     }
 
     // ─── Validate size ───
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File too large. Max size is 5MB.");
+    if (file.size > 15 * 1024 * 1024) {
+      alert("File too large. Max size is 15MB.");
       return;
     }
 

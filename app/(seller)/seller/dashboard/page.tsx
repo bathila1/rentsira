@@ -53,9 +53,9 @@ export default function Dashboard() {
     }
     init();
   }, []);
-useEffect(() => {
-  if (user && profile?.is_verified) fetchVehicles(user.id)
-}, [user, page, profile?.is_verified])
+  useEffect(() => {
+    if (user && profile?.is_verified) fetchVehicles(user.id);
+  }, [user, page, profile?.is_verified]);
 
   async function fetchVehicles(userId: string) {
     setLoadingList(true);
@@ -319,6 +319,7 @@ useEffect(() => {
             <OtpVerify
               isGoogleLogin={isUserHaveAPhoneNumber ? false : true}
               phone={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
+              phoneWhatsapp={user.user_metadata.phoneWhatsapp || ""}
               userId={user.id}
               onSuccess={async () => {
                 setShowOtp(false);
@@ -402,7 +403,7 @@ useEffect(() => {
             <input
               value={isUserHaveAPhoneNumber ? profile?.phone : form.phone}
               onChange={(e) => set("phone", e.target.value)}
-              placeholder="77 123 4567"
+              placeholder="Enter your phone number"
               type="tel"
               className="input"
               style={{
@@ -424,6 +425,15 @@ useEffect(() => {
                 📱 Verify Phone Number via OTP
               </button>
             )}
+
+          <Link href="/seller/profile/edit" style={{ textDecoration: "none" }}>
+            <button
+              className="btn btn-ghost btn-full"
+              style={{ marginTop: "var(--space-4)" }}
+            >
+              Edit phone number
+            </button>
+          </Link>
 
           {/* Logout option */}
           <button
