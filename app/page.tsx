@@ -7,6 +7,7 @@ import { settingsData } from "@/settings";
 import type { Metadata } from "next";
 import SearchBarBig from "@/components/SearchBarBig";
 import RequestButton from "@/components/RequestButton";
+import Image from "next/image";
 
 const title = "SIRAA — Vehicle Rental Platform Sri Lanka";
 const description =
@@ -92,13 +93,22 @@ export default async function Home() {
           >
             {settingsData.FrontPageMainSmallText}
           </p> */}
-         <RequestButton/>
+          <RequestButton />
 
-<div>
-              <p style={{ color: 'white', maxWidth: 480, lineHeight: 1.6, marginBottom: 'var(--space-3)', marginLeft: 'auto', marginRight: 'auto' }}>
-               <b>Or</b>
-              </p>
-</div>
+          <div>
+            <p
+              style={{
+                color: "white",
+                maxWidth: 480,
+                lineHeight: 1.6,
+                marginBottom: "var(--space-3)",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              <b>Or</b>
+            </p>
+          </div>
 
           {/* Search */}
           <SearchBarBig />
@@ -181,10 +191,13 @@ export default async function Home() {
                   }}
                 >
                   {car.image_urls?.[0] ? (
-                    <img
+                    <Image
                       src={car.image_urls[0]}
                       alt={`${car.make} ${car.model}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 260px"
                       className="vehicle-card-image"
+                      loading="lazy"
                     />
                   ) : (
                     <div
@@ -274,7 +287,7 @@ export default async function Home() {
             </Link>
             <br />
             <br />
-          <RequestButton/>
+            <RequestButton />
           </div>
         </div>
       </section>

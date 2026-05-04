@@ -8,6 +8,7 @@ import BumpModal from "../components/BumpModal";
 import { settingsData } from "@/settings";
 import OtpVerify from "../profile/components/OtpVerify";
 import { formatAndValidateSLNumber } from "@/utils/sanitize";
+import Image from "next/image";
 
 const PAGE_SIZE = settingsData.vehiclesPerPage || 5;
 
@@ -681,7 +682,6 @@ export default function Dashboard() {
                       padding: "var(--space-4)",
                     }}
                   >
-                    {/* Image */}
                     <div
                       style={{
                         width: "90px",
@@ -690,17 +690,16 @@ export default function Dashboard() {
                         borderRadius: "var(--radius-lg)",
                         overflow: "hidden",
                         background: "var(--bg-subtle)",
+                        position: "relative", // required for fill
                       }}
                     >
                       {v.image_urls?.[0] ? (
-                        <img
+                        <Image
                           src={v.image_urls[0]}
                           alt={v.model}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
+                          fill
+                          sizes="90px"
+                          style={{ objectFit: "cover" }}
                         />
                       ) : (
                         <div
@@ -735,7 +734,7 @@ export default function Dashboard() {
                           {isBumped(v) && (
                             <div style={{ marginBottom: "4px" }}>
                               <span className="badge badge-red">
-                                🔥 Bumped — {bumpTimeLeft(v)}
+                                🔥 Boosted
                               </span>
                             </div>
                           )}
@@ -761,15 +760,6 @@ export default function Dashboard() {
                             >
                               ({v.year})
                             </span>
-                          </p>
-                          <p
-                            style={{
-                              fontSize: "0.78rem",
-                              color: "var(--text-tertiary)",
-                              marginTop: "2px",
-                            }}
-                          >
-                            {v.type} • 📍 {v.district}
                           </p>
                         </div>
 
@@ -800,12 +790,6 @@ export default function Dashboard() {
                           marginTop: "var(--space-3)",
                         }}
                       >
-                        <Link
-                          href={`/explore/${v.id}?sellerView=true`}
-                          className="btn btn-secondary btn-sm"
-                        >
-                          👁️ View
-                        </Link>
 
                         <Link
                           href={`/seller/vehicles/edit/${v.id}`}
@@ -826,7 +810,7 @@ export default function Dashboard() {
                             border: "1px solid var(--color-primary-border)",
                           }}
                         >
-                          🔥 {isBumped(v) ? "Extend Bump" : "Bump Up"}
+                          🔥 {isBumped(v) ? "Boost+" : "Boost"}
                         </button>
 
                         {/* Delete */}

@@ -20,22 +20,21 @@ export default function GetStartedPage() {
           background: "var(--bg-page)",
         }}
       >
-        <div style={{ maxWidth: "480px", width: "100%" }}>
+        <div style={{ maxWidth: "480px", width: "100%", border: "1px solid var(--border-default)", borderRadius: "var(--radius-xl)", padding: "var(--space-6)", background: "var(--bg-card)" }}>
           {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: "var(--space-10)" }}>
+          <div style={{ textAlign: "center" }}>
             <div
               className="auth-logo"
-              style={{ marginBottom: "var(--space-4)" }}
             >
               {settingsData.LogoTextFirstPart}
               <span>{settingsData.LogoTextLastPart}</span>
             </div>
-            <h1 style={{ fontSize: "1.2rem", marginBottom: "var(--space-2)" }}>
+            {/* <h1 style={{ fontSize: "1.2rem", marginBottom: "var(--space-2)" }}>
               Add a Vehicle for Renting
             </h1>
             <p style={{ fontSize: "0.9rem", color: "var(--text-tertiary)" }}>
               Reach thousands of renters across Sri Lanka — completely free
-            </p>
+            </p> */}
           </div>
 
           {/* ─── Two Cards ─── */}
@@ -114,14 +113,7 @@ export default function GetStartedPage() {
                   >
                     👋 Already have an account?
                   </p>
-                  <p
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--text-tertiary)",
-                    }}
-                  >
-                    Sign in to manage your Rentings
-                  </p>
+                 
                 </div>
                 <div className="btn btn-secondary" style={{ flexShrink: 0 }}>
                   Sign In
@@ -130,51 +122,6 @@ export default function GetStartedPage() {
             </Link>
           </div>
 
-          {/* Benefits */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-2)",
-              marginTop: "var(--space-8)",
-            }}
-          >
-            {[
-              {
-                icon: "🚗",
-                text: "Add any vehicle — cars, vans, SUVs and more",
-              },
-              // { icon: '📍', text: 'Reach renters in all 25 districts' },
-              // { icon: '📞', text: 'Renters contact you directly' },
-              { icon: "🆓", text: "Registration Free" },
-            ].map((item) => (
-              <div
-                key={item.text}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-3)",
-                  padding: "var(--space-3)",
-                  borderRadius: "var(--radius-lg)",
-                  // border: '1px solid var(--border-default)',
-                }}
-              >
-                <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>
-                  {item.icon}
-                </span>
-                <p
-                  style={{
-                    fontSize: "0.85rem",
-                    fontWeight: 500,
-                    color: "var(--text-secondary)",
-                    margin: 0,
-                  }}
-                >
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
 
           {/* Back */}
           <p

@@ -17,6 +17,8 @@ type FormState = {
   notes: string;
 };
 
+type ValidationErrors = Partial<Record<keyof FormState, string>>;
+
 const INITIAL_FORM: FormState = {
   renter_name: "",
   renter_phone: "",
@@ -33,8 +35,27 @@ export default function BookingRequestPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
 
   const today = new Date().toISOString().split("T")[0];
+
+  function validate(): boolean {
+    const errors: ValidationErrors = {};
+    
+    if (!form.renter_name.trim()) errors.renter_name = "Please enter your full name";
+    if (!form.renter_phone.trim()) {
+      errors.renter_phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(form.renter_phone.replace(/\D/g, ""))) {
+      errors.renter_phone = "Please enter a valid 10-digit phone number";
+    }
+    
+    if (!form.vehicle_type) errors.vehicle_type = "Please select a vehicle type";
+    if (!form.pickup_district) errors.pickup_district = "Please select a pickup district";
+    if (!form.pickup_date) errors.pickup_date = "Please select your pickup date";
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   function handleChange(
     e: React.ChangeEvent<
@@ -42,94 +63,74 @@ export default function BookingRequestPage() {
     >,
   ) {
     const { name, value, type } = e.target;
+    const val = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
+    
     setForm((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: val,
     }));
+    
+    // Clear field error when user fixes it
+    if (fieldErrors[name as keyof FormState]) {
+      setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
-    // scroll to top for better readability of validation errors
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!validate()) {
+      // window.scrollTo({ top: 0, behavior: "smooth" });
+      // return;
 
-    if (
-      !form.renter_name ||
-      !form.renter_phone ||
-      !form.vehicle_type ||
-      !form.pickup_district ||
-      !form.pickup_date
-    ) {
-      setError("Please fill in all required fields.");
+      // Scroll to error field this should be accurate so think deeper
+        const firstErrorField = document.querySelector(`[name="${Object.keys(fieldErrors)[0]}"]`);
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+          (firstErrorField as HTMLElement).focus();
+        }
+
       return;
     }
 
     setLoading(true);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      // const res = await fetch(
-      //   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/submit-booking`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`, // ← ADD THIS
-      //     },
-
-      //     body: JSON.stringify({
-      //       renter_name: form.renter_name,
-      //       renter_phone: form.renter_phone,
-      //       vehicle_type: form.vehicle_type,
-      //       pickup_district: form.pickup_district,
-      //       pickup_date: form.pickup_date,
-      //       with_driver: form.with_driver,
-      //       seat_count: form.seat_count || null,
-      //       notes: form.notes || null,
-      //       user_id: user?.id ?? null,
-      //     }),
-      //   },
-      // );
-
-        const { data, error } = await supabase.functions.invoke("submit-booking", {
-          body: {
-            renter_name: sanitizeText(form.renter_name),
-            renter_phone: sanitizeText(form.renter_phone),
-            vehicle_type: sanitizeText(form.vehicle_type),
-            pickup_district: sanitizeText(form.pickup_district),
-            pickup_date: sanitizeText(form.pickup_date),
-            with_driver: form.with_driver,
-            seat_count: form.seat_count ? parseInt(form.seat_count) : null,
-            notes: sanitizeText(form.notes) || null,
-            user_id: user?.id ?? null,
-          },
+      // Direct insert to table instead of invoke to avoid 'res.json' errors
+      // and ensure reliability if Edge Function isn't set up.
+      const { error: insertError } = await supabase
+        .from("booking_requests")
+        .insert({
+          renter_name: sanitizeText(form.renter_name),
+          renter_phone: sanitizeText(form.renter_phone),
+          vehicle_type: sanitizeText(form.vehicle_type),
+          pickup_district: sanitizeText(form.pickup_district),
+          pickup_date: sanitizeText(form.pickup_date),
+          with_driver: form.with_driver,
+          seat_count: form.seat_count ? parseInt(form.seat_count) : null,
+          notes: sanitizeText(form.notes) || null,
+          user_id: user?.id ?? null,
+          status: "pending"
         });
 
-        if (error) throw new Error(error.message);
-        const res = data;
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error ?? "Submission failed.");
+      if (insertError) throw insertError;
 
       setSuccess(true);
       setForm(INITIAL_FORM);
 
-      // after 2 seconds, back to home page
+      // Redirect after showing success for a while
       setTimeout(() => {
         window.location.href = "/";
-      }, 5000);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
+      }, 6000);
+
+    } catch (err: any) {
+      console.error("Booking submission error:", err);
+      setError(err.message || "Failed to submit request. Please check your connection.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setLoading(false);
     }
@@ -137,544 +138,374 @@ export default function BookingRequestPage() {
 
   if (success) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          background: "var(--neutral-50)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "var(--space-6)",
-        }}
-      >
-        <div className="container-sm" style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              background: "rgb(0, 255, 128)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto var(--space-6)",
-            }}
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+      <main style={styles.successPage}>
+        <div style={styles.successCard}>
+          <div style={styles.successIconWrap}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "2rem",
-              color: "var(--neutral-950)",
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            Request Submitted!
-          </h1>
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              marginBottom: "var(--space-6)",
-              lineHeight: 1.6,
-            }}
-          >
-            We've received your vehicle request. Our team will Call you shortly.
+          <h1 style={styles.successTitle}>Request Submitted!</h1>
+          <p style={styles.successText}>
+            Thank you for choosing SIRAA.LK. We've received your request and our team will get back to you shortly to confirm the availability.
           </p>
-         
-          <button className="btn btn-primary" onClick={() => setSuccess(false)}>
-            Submit Another Request
-          </button>
-          
-          <div style={{ marginTop: "var(--space-2)" }}>
-           <BackButton/>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <button 
+              style={{ ...styles.submitBtn, width: "auto" }} 
+              onClick={() => setSuccess(false)}
+            >
+              Send Another Request
+            </button>
+            <a href="/" style={styles.homeLink}>Back to Home</a>
           </div>
+          <p style={styles.redirectHint}>Auto-redirecting in 6 seconds...</p>
         </div>
       </main>
     );
   }
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--neutral-50)" }}>
-      {/* Hero */}
-      <div
-        style={{
-          background: "var(--neutral-950)",
-          padding: "var(--space-16) var(--space-6) var(--space-12)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Decorative accent */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            background: "var(--color-primary)",
-          }}
-        />
-
-        <div
-          style={{
-            position: "absolute",
-            right: -80,
-            top: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            border: "60px solid rgba(248,50,50,0.07)",
-            pointerEvents: "none",
-          }}
-        />
-
+    <main style={{ minHeight: "100vh", background: "#f1f5f9" }}>
+      {/* ── Professional Header ── */}
+      <div style={styles.hero}>
         <div className="container-sm">
-          <BackButton />
-
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
-              color: "#fff",
-              lineHeight: 1.15,
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            Tell us what you need.
-            <br />
-            <span style={{ color: "var(--color-primary)" }}>
-              We'll find for u.
-            </span>
-          </h1>
-
-          <div style={{ marginTop: "var(--space-6)" }}>
-            <a
-              href={`tel:${settingsData.phone2}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "14px 24px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1.5px solid rgba(255,255,255,0.15)",
-                borderRadius: "var(--radius-full)",
-                textDecoration: "none",
-                backdropFilter: "blur(8px)",
-                cursor: "pointer",
-                transition: "all 0.25s ease",
-                position: "relative",
-                overflow: "hidden",
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = "rgba(248,50,50,0.15)";
-                el.style.borderColor = "var(--color-primary)";
-                el.style.transform = "translateY(-1px)";
-                el.style.boxShadow = "0 8px 32px rgba(248,50,50,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = "rgba(255,255,255,0.06)";
-                el.style.borderColor = "rgba(255,255,255,0.15)";
-                el.style.transform = "translateY(0)";
-                el.style.boxShadow = "none";
-              }}
-            >
-              {/* Animated ping dot */}
-              <span
-                style={{
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 36,
-                  height: 36,
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    background: "rgba(227, 0, 0, 0.53)",
-                    animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "relative",
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    background:
-                      "linear-gradient(135deg, rgb(66, 255, 249) 0%,rgba(60, 255, 0, 0.8))",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.64A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
-                  </svg>
-                </span>
-              </span>
-
-              <span
-                style={{ display: "flex", flexDirection: "column", gap: 2 }}
-              >
-                <span
-                  style={{
-                    color: "rgba(255,255,255,0.5)",
-                    fontSize: "0.7rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    lineHeight: 1,
-                  }}
-                >
-                  Prefer to call?
-                </span>
-                <span
-                  style={{
-                    color: "#fff",
-                    fontFamily: "var(--font-display)",
-                    fontSize: "1.05rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.02em",
-                    lineHeight: 1,
-                  }}
-                >
-                  {settingsData.phone1}
-                </span>
-              </span>
-
-              {/* Arrow */}
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ marginLeft: 4 }}
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
+          <div style={{ marginBottom: "20px" }}>
+            <BackButton />
           </div>
-
-          <style>{`
-  @keyframes ping {
-    75%, 100% { transform: scale(1.8); opacity: 0; }
-  }
-`}</style>
+          <h1 style={styles.heroTitle}>
+            <span style={{ color: "#ffffff" }}>Find Your </span>
+            <span style={{ color: "#ef4444" }}>Rental.</span>
+          </h1>
+          <p style={styles.heroSub}>Simply fill the form below and we'll call you with the best available vehicles.</p>
+          
+          <div style={styles.supportBadge}>
+            <div style={styles.liveIndicator}>
+              <div style={styles.pulseDot} />
+              <div style={styles.pulseDotInner} />
+            </div>
+            <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>SUPPORT:</span>
+            <a href={`tel:${settingsData.phone1}`} style={styles.phoneLink}>{settingsData.phone1}</a>
+          </div>
         </div>
       </div>
 
-      {/* Form */}
-      <div
-        className="container-sm"
-        style={{ padding: "var(--space-10) var(--space-6)", maxWidth: 660 }}
-      >
+      <div className="container-sm" style={styles.formWrapper}>
         {error && (
-          <div
-            className="alert alert-error"
-            style={{ marginBottom: "var(--space-6)" }}
-          >
-            {error}
+          <div style={styles.alertError}>
+            <span style={{ fontSize: "1.2rem" }}>⚠️</span>
+            <div style={{ flex: 1 }}>{error}</div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          {/* ── Vehicle Requirements ── */}
-          <div
-            className="section-card"
-            style={{ marginBottom: "var(--space-6)" }}
-          >
-            <h2 className="section-card-title">Vehicle Requirements</h2>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="vehicle_type">
-                Vehicle Type{" "}
-                <span style={{ color: "var(--color-primary)" }}>*</span>
-              </label>
-              <select
-                id="vehicle_type"
-                name="vehicle_type"
-                className="input"
-                value={form.vehicle_type}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select a type…</option>
-                {(dynamicData?.vehicle_types ?? []).map((t: string) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "var(--space-4)",
-              }}
-            >
-              <div className="form-group">
-                <label className="form-label" htmlFor="seat_count">
-                  Seats Needed
-                </label>
-                <input
-                  id="seat_count"
-                  name="seat_count"
-                  className="input"
-                  type="number"
-                  min={1}
-                  max={60}
-                  placeholder="e.g. 5"
-                  value={form.seat_count}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div
-                className="form-group"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--space-3)",
-                    cursor: "pointer",
-                    padding: "var(--space-3) var(--space-4)",
-                    border: "1.5px solid var(--neutral-200)",
-                    borderRadius: "var(--radius-lg)",
-                    background: form.with_driver
-                      ? "rgba(248,50,50,0.05)"
-                      : "transparent",
-                    borderColor: form.with_driver
-                      ? "var(--color-primary)"
-                      : "var(--neutral-200)",
-                    transition: "all 0.15s",
-                    marginTop: "auto",
-                  }}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          
+          {/* Step 1: Vehicle */}
+          <div style={styles.formCard}>
+            <div style={styles.cardBadge}>STEP 1</div>
+            <h2 style={styles.cardHeading}>Vehicle :</h2>
+            <div style={styles.inputGrid}>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={styles.inputLabel}>What type of vehicle? *</label>
+                <select 
+                  name="vehicle_type" 
+                  value={form.vehicle_type} 
+                  onChange={handleChange} 
+                  style={{...styles.selectInput, ...(fieldErrors.vehicle_type ? styles.errorBorder : {})}}
                 >
-                  <input
-                    type="checkbox"
-                    name="with_driver"
-                    checked={form.with_driver}
-                    onChange={handleChange}
-                    style={{
-                      accentColor: "var(--color-primary)",
-                      width: 18,
-                      height: 18,
-                    }}
+                  <option value="">Select vehicle type...</option>
+                  {(dynamicData?.vehicle_types ?? []).map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                {fieldErrors.vehicle_type && <span style={styles.errorMsg}>{fieldErrors.vehicle_type}</span>}
+              </div>
+
+              <div>
+                <label style={styles.inputLabel}>Seat Count</label>
+                <input 
+                  type="number" 
+                  name="seat_count" 
+                  placeholder="e.g. 5" 
+                  value={form.seat_count} 
+                  onChange={handleChange} 
+                  style={styles.textInput} 
+                />
+              </div>
+
+              <div style={{ display: "flex", alignItems: "flex-end" }}>
+                <label style={{...styles.checkLabel, ...(form.with_driver ? styles.checkLabelActive : {})}}>
+                  <input 
+                    type="checkbox" 
+                    name="with_driver" 
+                    checked={form.with_driver} 
+                    onChange={handleChange} 
+                    style={{ accentColor: "#ef4444", width: "18px", height: "18px" }}
                   />
-                  <span
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.9rem",
-                      color: "var(--neutral-950)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    With Driver
-                  </span>
+                  <span>With Driver</span>
                 </label>
               </div>
             </div>
           </div>
-          {/* ── Contact Details ── */}
-          <div
-            className="section-card"
-            style={{ marginBottom: "var(--space-6)" }}
-          >
-            <h2 className="section-card-title">Your Details</h2>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="renter_name">
-                Full Name{" "}
-                <span style={{ color: "var(--color-primary)" }}>*</span>
-              </label>
-              <input
-                id="renter_name"
-                name="renter_name"
-                className="input"
-                type="text"
-                placeholder="e.g. Kamal Perera"
-                value={form.renter_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="renter_phone">
-                Phone Number{" "}
-                <span style={{ color: "var(--color-primary)" }}>*</span>
-              </label>
-              <input
-                id="renter_phone"
-                name="renter_phone"
-                className="input"
-                type="tel"
-                placeholder="e.g. 077 123 4567"
-                value={form.renter_phone}
-                onChange={handleChange}
-                required
-              />
+          {/* Step 2: Contact */}
+          <div style={styles.formCard}>
+            <div style={styles.cardBadge}>STEP 2</div>
+            <h2 style={styles.cardHeading}>Contact :</h2>
+            <div style={styles.inputGrid}>
+              <div>
+                <label style={styles.inputLabel}>Your Full Name *</label>
+                <input 
+                  type="text" 
+                  name="renter_name" 
+                  placeholder="Enter your name" 
+                  value={form.renter_name} 
+                  onChange={handleChange} 
+                  style={{...styles.textInput, ...(fieldErrors.renter_name ? styles.errorBorder : {})}}
+                />
+                {fieldErrors.renter_name && <span style={styles.errorMsg}>{fieldErrors.renter_name}</span>}
+              </div>
+              <div>
+                <label style={styles.inputLabel}>Phone Number *</label>
+                <input 
+                  type="tel" 
+                  name="renter_phone" 
+                  placeholder="07X XXX XXXX" 
+                  value={form.renter_phone} 
+                  onChange={handleChange} 
+                  style={{...styles.textInput, ...(fieldErrors.renter_phone ? styles.errorBorder : {})}}
+                />
+                {fieldErrors.renter_phone && <span style={styles.errorMsg}>{fieldErrors.renter_phone}</span>}
+              </div>
             </div>
           </div>
-          {/* ── Trip Details ── */}
-          <div
-            className="section-card"
-            style={{ marginBottom: "var(--space-6)" }}
-          >
-            <h2 className="section-card-title">Trip Details</h2>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="pickup_district">
-                Pickup District{" "}
-                <span style={{ color: "var(--color-primary)" }}>*</span>
-              </label>
-              <select
-                id="pickup_district"
-                name="pickup_district"
-                className="input"
-                value={form.pickup_district}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select a district…</option>
-                {SriLankanDistricts.map((d: string) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div
-              style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}
-            >
-              <div className="form-group">
-                <label className="form-label" htmlFor="pickup_date">
-                  Pickup Date{" "}
-                  <span style={{ color: "var(--color-primary)" }}>*</span>
-                </label>
-                <input
-                  id="pickup_date"
-                  name="pickup_date"
-                  className="input"
-                  type="date"
-                  min={today}
-                  value={form.pickup_date}
-                  onChange={handleChange}
-                  required
+          {/* Step 3: Logistics */}
+          <div style={styles.formCard}>
+            <div style={styles.cardBadge}>STEP 3</div>
+            <h2 style={styles.cardHeading}>Trip :</h2>
+            <div style={styles.inputGrid}>
+              <div>
+                <label style={styles.inputLabel}>Pickup District *</label>
+                <select 
+                  name="pickup_district" 
+                  value={form.pickup_district} 
+                  onChange={handleChange} 
+                  style={{...styles.selectInput, ...(fieldErrors.pickup_district ? styles.errorBorder : {})}}
+                >
+                  <option value="">Choose district...</option>
+                  {SriLankanDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                {fieldErrors.pickup_district && <span style={styles.errorMsg}>{fieldErrors.pickup_district}</span>}
+              </div>
+              <div>
+                <label style={styles.inputLabel}>Pickup Date *</label>
+                <input 
+                  type="date" 
+                  name="pickup_date" 
+                  min={today} 
+                  value={form.pickup_date} 
+                  onChange={handleChange} 
+                  style={{...styles.textInput, ...(fieldErrors.pickup_date ? styles.errorBorder : {})}}
+                />
+                {fieldErrors.pickup_date && <span style={styles.errorMsg}>{fieldErrors.pickup_date}</span>}
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={styles.inputLabel}>Additional Requests (Optional)</label>
+                <textarea 
+                  name="notes" 
+                  rows={3} 
+                  placeholder="Special requirements, budget range, preferred model..." 
+                  value={form.notes} 
+                  onChange={handleChange} 
+                  style={styles.textarea} 
                 />
               </div>
             </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="notes">
-                Special Requirements
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                className="input"
-                rows={4}
-                placeholder="Any specific requirements — AC, luggage space, baby seat, specific model, budget range…"
-                value={form.notes}
-                onChange={handleChange}
-                style={{ resize: "vertical", minHeight: 100 }}
-              />
-            </div>
           </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="btn btn-primary btn-full btn-lg"
-            disabled={loading}
+          <button 
+            type="submit" 
+            disabled={loading} 
+            style={{...styles.submitBtn, ...(loading ? styles.disabledBtn : {})}}
           >
-            {loading ? (
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
-              >
-                <span
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    border: "2px solid rgba(255,255,255,0.3)",
-                    borderTopColor: "#fff",
-                    display: "inline-block",
-                    animation: "spin 0.7s linear infinite",
-                  }}
-                />
-                Submitting…
-              </span>
-            ) : (
-              "Submit Booking Request"
-            )}
+            {loading ? "Submitting Request..." : "Request Now"}
           </button>
-
-          <p
-            style={{
-              textAlign: "center",
-              marginTop: "var(--space-4)",
-              color: "var(--text-secondary)",
-              fontSize: "0.85rem",
-            }}
-          >
-            We'll contact you within a few hours to confirm your booking.
+          
+          <p style={{ textAlign: "center", color: "#64748b", fontSize: "0.85rem", marginBottom: "40px" }}>
+            By submitting, you agree to our terms of service.
           </p>
         </form>
       </div>
 
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse {
+          0% { transform: scale(0.95); opacity: 0.5; }
+          70% { transform: scale(1.5); opacity: 0; }
+          100% { transform: scale(0.95); opacity: 0; }
+        }
       `}</style>
     </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  hero: {
+    background: "#0f172a",
+    padding: "64px 24px",
+    color: "#fff",
+    borderBottom: "6px solid #ef4444"
+  },
+  heroTitle: {
+    fontSize: "clamp(2.2rem, 6vw, 3.5rem)",
+    fontWeight: 900,
+    lineHeight: 1,
+    marginBottom: "16px",
+    fontFamily: "var(--font-display)"
+  },
+  heroSub: {
+    fontSize: "1.1rem",
+    color: "#94a3b8",
+    maxWidth: "500px",
+    marginBottom: "32px"
+  },
+  supportBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "12px",
+    background: "rgba(255,255,255,0.05)",
+    padding: "10px 20px",
+    borderRadius: "100px",
+    border: "1px solid rgba(255,255,255,0.1)"
+  },
+  liveIndicator: { position: "relative", width: "10px", height: "10px" },
+  pulseDot: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    background: "#10b981",
+    borderRadius: "50%",
+    animation: "pulse 2s infinite"
+  },
+  pulseDotInner: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    background: "#10b981",
+    borderRadius: "50%"
+  },
+  phoneLink: { color: "#fff", fontWeight: 700, textDecoration: "none", fontSize: "1.1rem" },
+  
+  formWrapper: {
+    maxWidth: "700px",
+    marginTop: "-40px",
+    padding: "0 24px"
+  },
+  formCard: {
+    background: "#fff",
+    borderRadius: "28px",
+    padding: "40px",
+    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.04)",
+    border: "1px solid #e2e8f0",
+    position: "relative"
+  },
+  cardBadge: {
+    position: "absolute",
+    top: "20px",
+    right: "40px",
+    fontSize: "0.7rem",
+    fontWeight: 800,
+    color: "#94a3b8",
+    letterSpacing: "0.1em"
+  },
+  cardHeading: {
+    fontSize: "1.4rem",
+    fontWeight: 800,
+    color: "#1e293b",
+    marginBottom: "28px"
+  },
+  inputGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" },
+  inputLabel: {
+    display: "block",
+    fontSize: "0.85rem",
+    fontWeight: 700,
+    color: "#475569",
+    marginBottom: "10px"
+  },
+  textInput: {
+    width: "100%",
+    padding: "14px 18px",
+    borderRadius: "14px",
+    border: "2px solid #f1f5f9",
+    background: "#f8fafc",
+    fontSize: "1rem",
+    outline: "none",
+    transition: "all 0.2s"
+  },
+  selectInput: {
+    width: "100%",
+    padding: "14px 18px",
+    borderRadius: "14px",
+    border: "2px solid #f1f5f9",
+    background: "#f8fafc",
+    fontSize: "1rem",
+    outline: "none",
+    cursor: "pointer"
+  },
+  textarea: {
+    width: "100%",
+    padding: "14px 18px",
+    borderRadius: "14px",
+    border: "2px solid #f1f5f9",
+    background: "#f8fafc",
+    fontSize: "1rem",
+    outline: "none",
+    resize: "vertical"
+  },
+  checkLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "14px 18px",
+    borderRadius: "14px",
+    border: "2px solid #f1f5f9",
+    background: "#f8fafc",
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#64748b",
+    width: "100%",
+    transition: "all 0.2s"
+  },
+  checkLabelActive: { borderColor: "#ef4444", color: "#ef4444", background: "#fff1f2" },
+  submitBtn: {
+    padding: "20px",
+    borderRadius: "20px",
+    background: "#ef4444",
+    color: "#fff",
+    fontSize: "1.2rem",
+    fontWeight: 800,
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0 10px 15px -3px rgba(239, 68, 68, 0.3)",
+    transition: "transform 0.2s ease"
+  },
+  disabledBtn: { opacity: 0.6, cursor: "not-allowed" },
+  errorBorder: { borderColor: "#fca5a5", background: "#fff5f5" },
+  errorMsg: { color: "#ef4444", fontSize: "0.75rem", fontWeight: 600, marginTop: "6px", display: "block" },
+  alertError: {
+    padding: "16px 24px",
+    background: "#fff1f2",
+    borderRadius: "16px",
+    border: "1px solid #fee2e2",
+    color: "#ef4444",
+    marginBottom: "24px",
+    display: "flex",
+    gap: "12px",
+    fontWeight: 600
+  },
+  
+  successPage: { minHeight: "100vh", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" },
+  successCard: { background: "#fff", padding: "60px 40px", borderRadius: "40px", textAlign: "center", maxWidth: "550px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.08)" },
+  successIconWrap: { width: "80px", height: "80px", borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 32px" },
+  successTitle: { fontSize: "2.2rem", fontWeight: 900, color: "#1e293b", marginBottom: "16px" },
+  successText: { fontSize: "1.1rem", color: "#64748b", lineHeight: 1.6, marginBottom: "40px" },
+  homeLink: { color: "#64748b", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" },
+  redirectHint: { fontSize: "0.8rem", color: "#cbd5e1", marginTop: "32px" }
+};

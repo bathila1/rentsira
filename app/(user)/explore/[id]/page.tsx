@@ -89,23 +89,26 @@ export default async function VehicleDetailPage({
 
   if (error || !vehicle) notFound();
 
-  const { data: sellerProfile } = await supabase
-    .from("profiles")
-    .select("full_name, phone, phoneWhatsapp")
-    .eq("id", vehicle.seller_id)
-    .single();
-  
-  // get phoneWhatsapp from the auth user if not available in profile (for google login)
-  if (sellerProfile && !sellerProfile.phoneWhatsapp) {
-    const { data: authUser } = await supabase.auth.getUser(vehicle.seller_id);
+  let sellerName = "Renter";
+  let sellerPhone = null;
+  let sellerWhatsappPhone = null;
 
-    console.log("Seller Profile:", sellerProfile); // Debug log for seller profile
-    console.log("Auth User:", authUser); // Debug log for auth user
+  if (vehicle.seller_id) {
+    const { data: sellerProfile } = await supabase
+      .from("profiles")
+      .select("full_name, phone, phoneWhatsapp")
+      .eq("id", vehicle.seller_id)
+      .single();
+    
+    sellerName = sellerProfile?.full_name || "Renter";
+    sellerPhone = sellerProfile?.phone || null;
+    sellerWhatsappPhone = sellerProfile?.phoneWhatsapp || null;
+  } else {
+    // Handle manual admin entries
+    sellerName = vehicle.manual_seller_name || "Renter";
+    sellerPhone = vehicle.manual_seller_phone || null;
+    sellerWhatsappPhone = vehicle.manual_seller_phone || null; // Assume same for manual entries
   }
-
-  const sellerName = sellerProfile?.full_name || "Renter";
-  const sellerPhone = sellerProfile?.phone || null;
-  const sellerWhatsappPhone = sellerProfile?.phoneWhatsapp || null;
 
   const rates = [
     { label: "Daily Rate", value: vehicle.daily_rate, icon: "📅" },
