@@ -52,14 +52,15 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Links */}
+          {/* Links Grid */}
           <div
             style={{
               display: "flex",
-              gap: "var(--space-10)",
+              gap: "var(--space-12)",
               flexWrap: "wrap",
             }}
           >
+            {/* Platform Links */}
             <div>
               <p
                 style={{
@@ -69,7 +70,6 @@ const Footer = () => {
                   textTransform: "uppercase",
                   color: "var(--neutral-400)",
                   marginBottom: "var(--space-3)",
-                  fontFamily: "var(--font-body)",
                 }}
               >
                 Platform
@@ -92,6 +92,39 @@ const Footer = () => {
                 </Link>
               </div>
             </div>
+
+            {/* Legal Links - REQUIRED FOR PAYHERE */}
+            <div>
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--neutral-400)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                Legal
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--space-2)",
+                }}
+              >
+                <Link href="/privacy-policy" className="footer-link">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="footer-link">
+                  Terms & Conditions
+                </Link>
+                <Link href="/refund-policy" className="footer-link">
+                  Refund Policy
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -100,13 +133,17 @@ const Footer = () => {
           style={{
             borderTop: "1px solid var(--neutral-800)",
             paddingTop: "var(--space-6)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "var(--space-2)"
           }}
         >
           <Link
             target="_blank"
             rel="noopener noreferrer"
             href={settingsData.FooterTextLink}
-            style={{ color: "var(--neutral-500)" }}
+            style={{ color: "var(--neutral-500)", textDecoration: "none" }}
           >
             <p
               style={{
@@ -118,6 +155,9 @@ const Footer = () => {
               {settingsData.FooterText}
             </p>
           </Link>
+          <p style={{ fontSize: "0.7rem", color: "var(--neutral-700)" }}>
+            © {new Date().getFullYear()} Siraa.lk. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

@@ -119,6 +119,29 @@ export default function BookingRequestPage() {
 
       if (insertError) throw insertError;
 
+      const emailBody = {
+         name: sanitizeText(form.renter_name),
+          email: sanitizeText(form.renter_name) + Math.random() +"@gmail.com", 
+          phone: sanitizeText(form.renter_phone),
+          topic: "Booking Request: " + sanitizeText(form.vehicle_type),
+          message: "renter_name: " + sanitizeText(form.renter_name) + "\n" +
+                   "renter_phone: " + sanitizeText(form.renter_phone) + "\n" +
+                   "vehicle_type: " + sanitizeText(form.vehicle_type) + "\n" +
+                   "pickup_district: " + sanitizeText(form.pickup_district) + "\n" +
+                   "pickup_date: " + sanitizeText(form.pickup_date) + "\n" +
+                   "with_driver: " + form.with_driver + "\n" +
+                   "seat_count: " + form.seat_count + "\n" +
+                   "notes: " + sanitizeText(form.notes) + "\n"
+      }
+
+          // 2️⃣ Send email notification
+      const { error: fnError } = await supabase.functions.invoke(
+        'send-contact-email',
+        { body: emailBody }
+      )
+
+      if (fnError) throw new Error(fnError.message)
+
       setSuccess(true);
       setForm(INITIAL_FORM);
 
@@ -169,14 +192,14 @@ export default function BookingRequestPage() {
       {/* ── Professional Header ── */}
       <div style={styles.hero}>
         <div className="container-sm">
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "0px" }}>
             <BackButton />
           </div>
           <h1 style={styles.heroTitle}>
             <span style={{ color: "#ffffff" }}>Find Your </span>
             <span style={{ color: "#ef4444" }}>Rental.</span>
           </h1>
-          <p style={styles.heroSub}>Simply fill the form below and we'll call you with the best available vehicles.</p>
+          <p style={styles.heroSub}>Fill the form. We'll call you.</p>
           
           <div style={styles.supportBadge}>
             <div style={styles.liveIndicator}>
@@ -184,7 +207,7 @@ export default function BookingRequestPage() {
               <div style={styles.pulseDotInner} />
             </div>
             <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>SUPPORT:</span>
-            <a href={`tel:${settingsData.phone1}`} style={styles.phoneLink}>{settingsData.phone1}</a>
+            <a href={`tel:${settingsData.phone1}`} style={styles.phoneLink}>{settingsData.phone3}</a>
           </div>
         </div>
       </div>

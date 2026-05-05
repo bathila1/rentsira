@@ -8,8 +8,6 @@ whatsapp no -> add a separate number for whatsapp
 forget password
 
 adding rent cars from ikman
-admin panel -> to add cars from ikman
-
 
 when deleting delete the images from the supabase bucket its not deleting automatically
 accepting and rejecting a vehicle post
