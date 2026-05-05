@@ -4,6 +4,7 @@ import VehicleCard from "./components/VehicleCard";
 import Pagination from "./components/Pagination";
 import { Suspense } from "react";
 import Header from "@/components/Header";
+import "../../globals.css";
 
 import type { Metadata } from "next";
 import BackButton from "./[id]/components/BackBtn";
@@ -153,67 +154,74 @@ export default async function ExplorePage({
         >
           {"←"} Back
         </Link> */}
-        <BackButton />
+{/* only visible to laptops and pcs, hide from mobile devices */}
 
-        {/* ─── Page Header ─── */}
-        <div style={{ marginBottom: "var(--space-6)" }}>
-          {/* <p className="label" style={{ marginBottom: "var(--space-1)" }}>
+        <div  className="hiddenFromMobile" >
+          {/* ─── Page Header ─── */}
+          <div style={{ marginBottom: "var(--space-6)" }}>
+            {/* <p className="label" style={{ marginBottom: "var(--space-1)" }}>
             Sri Lanka
           </p> */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "var(--space-2)",
-            }}
-          >
-            <h1 style={{ fontSize: "1.75rem" }}>Filter Vehicles</h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
-              {totalCount.toLocaleString()} vehicle{totalCount !== 1 ? "s" : ""}{" "}
-              available
-              {userLat && (
-                <span
-                  style={{
-                    marginLeft: "var(--space-2)",
-                    color: "var(--color-primary)",
-                    fontWeight: 600,
-                  }}
-                >
-                  📍 Sorted by distance
-                </span>
-              )}
-            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "var(--space-2)",
+              }}
+            >
+              <p
+                style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}
+              >
+                {userLat && (
+                  <span
+                    style={{
+                      marginLeft: "var(--space-2)",
+                      color: "var(--color-primary)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    📍 Sorted by distance
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
+
+          {/* ─── Filter Bar ─── */}
+          <Suspense
+            fallback={
+              <div
+                className="skeleton"
+                style={{
+                  height: "60px",
+                  borderRadius: "var(--radius-xl)",
+                  marginBottom: "var(--space-6)",
+                }}
+              />
+            }
+          >
+            <FilterBar />
+          </Suspense>
         </div>
 
-        {/* ─── Filter Bar ─── */}
-        <Suspense
-          fallback={
-            <div
-              className="skeleton"
-              style={{
-                height: "60px",
-                borderRadius: "var(--radius-xl)",
-                marginBottom: "var(--space-6)",
-              }}
-            />
-          }
-        >
-          <FilterBar />
-        </Suspense>
-
+        <div>
+          {totalCount.toLocaleString()} vehicle{totalCount !== 1 ? "s" : ""}{" "}
+          available
+        </div>
         {/* ─── Empty State ─── */}
         {vehicles.length === 0 ? (
           <div className="empty-state">
             <div>
-              <RequestButton/>
+              <RequestButton />
               <p className="empty-state-sub">
                 Submit a request We will find a perfect match for you as soon as
                 possible
               </p>
             </div>
+        <BackButton />
+
             <span className="empty-state-icon">🚘</span>
           </div>
         ) : (

@@ -541,7 +541,7 @@ export default async function Home() {
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(8);
-
+    
   return (
     <div className="page">
       {/* <Header /> */}
@@ -550,7 +550,7 @@ export default async function Home() {
       <section className="hero">
         <div>
           <Link
-            href="/get-started"
+            href="/login"
             className="btn btn-primary btn-sm"
             style={{
               display: "flex",
@@ -575,7 +575,7 @@ export default async function Home() {
           </div>
 
           <h1 className="hero-title">
-            Find Your Perfect
+            Find Your
             <br />
             <span className="accent">Rental Vehicle</span>
           </h1>
@@ -614,7 +614,7 @@ export default async function Home() {
           </div>
 
           {/* Stats */}
-          <div
+          {/* <div
             style={{
               display: "flex",
               justifyContent: "center",
@@ -622,11 +622,11 @@ export default async function Home() {
               gap: "var(--space-8)",
               flexWrap: "wrap",
             }}
-          >
-            <div className="stat-pill">
+          > */}
+            {/* <div className="stat-pill">
               <div className="stat-pill-value">{count?.toLocaleString()}+</div>
               <div className="stat-pill-label">Vehicles Listed</div>
-            </div>
+            </div> */}
 
             {/* <div style={{ width: '1px', height: '36px', backgroundColor: 'rgb(255 255 255 / 0.1)' }} /> 
             <div className="stat-pill">
@@ -638,12 +638,12 @@ export default async function Home() {
               <div className="stat-pill-value">7</div>
               <div className="stat-pill-label">Vehicle Types</div>
             </div> */}
-          </div>
+          {/* </div> */}
         </div>
       </section>
 
       {/* ─── FEATURED VEHICLES ─── */}
-      <section style={{ padding: "var(--space-16) 0" }}>
+      <section style={{ padding: "var(--space-1) 0" }}>
         <div className="container">
           {/* Section header */}
           <div
@@ -654,13 +654,10 @@ export default async function Home() {
               marginBottom: "var(--space-8)",
             }}
           >
-            <div>
+            {/* <div>
               <p className="label">Recently Added</p>
               <h2 style={{ marginTop: "var(--space-1)" }}>Latest Listings</h2>
-            </div>
-            <Link href="/explore" className="btn btn-ghost btn-sm">
-              View All {"→"}
-            </Link>
+            </div> */}
           </div>
 
           {/* Vehicle Grid */}
@@ -779,7 +776,7 @@ export default async function Home() {
 
           {/* CTA */}
           <div style={{ textAlign: "center", marginTop: "var(--space-12)" }}>
-            <Link href="/get-started" className="btn btn-primary btn-lg">
+            <Link href="/login" className="btn btn-primary btn-lg">
               🚗 Post Your Vehicle Free
             </Link>
             <br />

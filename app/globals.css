@@ -1257,3 +1257,14 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 12px 40px rgba(248, 50, 50, 0.5) !important;
 }
+
+.hiddenFromMobile {
+  display: none;
+}
+
+/* Show on screens that are 768px or wider (Tablets, Laptops, PCs) */
+@media (min-width: 768px) {
+  .hiddenFromMobile {
+    display: block; /* Change to flex or grid if your layout needs it */
+  }
+}

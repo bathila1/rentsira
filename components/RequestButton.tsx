@@ -66,7 +66,7 @@ export default function RequestButton() {
           </svg>
         </span>
 
-        <span style={{ position: "relative" }}> Request</span>
+        <span style={{ position: "relative" }}> Book</span>
         <svg
           style={{ position: "relative", opacity: 0.8 }}
           width="16"

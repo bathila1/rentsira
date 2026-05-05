@@ -141,20 +141,20 @@ export default function RegisterClient() {
     <div className="auth-page">
       <div className="auth-card animate-fade-in-scale">
         {/* Logo */}
-        <div className="auth-logo">
+        <div className="auth-logo" style={{ marginBottom: "var(--space-3)" }}>
           {settingsData.LogoTextFirstPart}
           <span>{settingsData.LogoTextLastPart}</span>
         </div>
 
         {/* Title */}
-        <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
+        {/* <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
           <h1 style={{ fontSize: "1.4rem", marginBottom: "var(--space-1)" }}>
             Create an Account
           </h1>
           <p style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}>
             Start listing your vehicles today
           </p>
-        </div>
+        </div> */}
 
         {/* Alerts */}
         {error && (
@@ -243,13 +243,13 @@ export default function RegisterClient() {
         >
           <div className="form-group">
             <label className="form-label">
-              Full Name <span className="required">*</span>
+              Name <span className="required">*</span>
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              placeholder="e.g. Bathila Sanvidu"
+              // placeholder="e.g. Bathila Sanvidu"
               required
               className="input"
             />
@@ -281,7 +281,7 @@ export default function RegisterClient() {
                 type="tel"
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
-                placeholder="77 123 4567"
+                // placeholder="77 123 4567"
                 required
                 className="input"
                 style={{
@@ -317,7 +317,7 @@ export default function RegisterClient() {
                 type="tel"
                 value={form.phoneWhatsapp}
                 onChange={(e) => set("phoneWhatsapp", e.target.value)}
-                placeholder="77 123 4567"
+                // placeholder="77 123 4567"
                 required
                 className="input"
                 style={{
@@ -337,7 +337,7 @@ export default function RegisterClient() {
               type="email"
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
-              placeholder="you@example.com"
+              // placeholder="you@example.com"
               required
               className="input"
             />
@@ -392,7 +392,7 @@ export default function RegisterClient() {
               }}
             >
               {form.password.length === 0
-                ? "Use at least 6 characters"
+                ? ""
                 : form.password.length < 4
                   ? "Weak password"
                   : form.password.length < 8
@@ -402,9 +402,6 @@ export default function RegisterClient() {
           </div>
           <div>
             {/* confirm password */}
-            <label className="form-label">
-              Confirm Password <span className="required">*</span>
-            </label>
             <input
               type="password"
               value={form.passwordConfirm}
@@ -450,18 +447,13 @@ export default function RegisterClient() {
         </div>
 
         <Link href="/login" className="btn btn-secondary btn-full">
-          Sign In Instead
+          Sign In
         </Link>
 
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "var(--space-5)",
-            fontSize: "0.8rem",
-          }}
-        >
-          <Link href="/" style={{ color: "var(--text-tertiary)" }}>
-            {"←"} Back to Home
+         <p style={{ textAlign: 'center', marginTop: 'var(--space-5)', fontSize: '0.8rem' }}>
+          {'←'}
+          <Link href="/" style={{ color: 'blue', textDecoration: 'underline' }}>
+             Back to Home
           </Link>
         </p>
       </div>

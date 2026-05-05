@@ -52,12 +52,12 @@ export default function LoginClient() {
 
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <h1 style={{ fontSize: '1.4rem', marginBottom: 'var(--space-1)' }}>
+          {/* <h1 style={{ fontSize: '1.4rem', marginBottom: 'var(--space-1)' }}>
             Welcome back
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
+          </h1> */}
+          {/* <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
             Sign in to manage your listings
-          </p>
+          </p> */}
         </div>
 
         {/* Error */}
@@ -119,7 +119,7 @@ export default function LoginClient() {
         >
           <div className="form-group">
             <label className="form-label">
-              Email Address <span className="required">*</span>
+              Email <span className="required">*</span>
             </label>
             <input
               type="email" value={email}
@@ -160,11 +160,12 @@ export default function LoginClient() {
         </Link>
 
         <p style={{ textAlign: 'center', marginTop: 'var(--space-5)', fontSize: '0.8rem' }}>
-          <Link href="/" style={{ color: 'var(--text-tertiary)' }}>
-            {'←'} Back to Home
+          {'←'}
+          <Link href="/" style={{ color: 'blue', textDecoration: 'underline' }}>
+             Back to Home
           </Link>
         </p>
-
+ 
       </div>
     </div>
   )
