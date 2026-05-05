@@ -11,6 +11,31 @@ const Footer = () => {
         marginTop: "var(--space-16)",
       }}
     >
+      <div className="hiddenForSeoOptimization" >
+      <p style={{
+        color: "transparent",
+      }}>LUXURY VEHICLES
+
+Toyota Premio
+Toyota TRJ 120 Prado
+Toyota Avanza 2017
+Toyota Hilux Cab
+Toyota TRJ 150 Prado
+MINI CARS
+
+Nissan March
+Suzuki Japan Alto
+Vans
+
+Suzuki Every Buddy Van Auto
+STANDARD VEHICLES
+
+Suzuki Swift
+Toyota Vitz
+Toyota Avanza
+Toyota Allion
+Toyota Premio</p>
+      </div>
       <div
         className="container"
         style={{ padding: "var(--space-10) var(--space-4)" }}
@@ -49,7 +74,9 @@ const Footer = () => {
             >
               Sri Lanka's premier vehicle rental platform. Find the right
               vehicle for every journey.
+
             </p>
+            
           </div>
 
           {/* Links Grid */}

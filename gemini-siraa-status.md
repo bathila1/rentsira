@@ -37,7 +37,7 @@ SIRAA is a vehicle rental platform in Sri Lanka, built with Next.js, Supabase, a
 - [ ] **Error Handling:** Enhance global error boundaries and API error responses.
 
 ### User Features
-- [ ] **Forget Password:** Implement the password recovery flow.
+- [ ] **Forget Password:** (In Progress) Implementing the password recovery flow.
 - [ ] **Registration Improvements:** Add name change logic after registration.
 - [ ] **WhatsApp Integration:** Add a dedicated field for WhatsApp numbers, separate from the primary contact number.
 - [ ] **Guide/Help:** Create a user guide or help section for the platform.
