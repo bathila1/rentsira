@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "SIRAA — Vehicle Rental Platform Sri Lanka",
+    default: "Cars,Vans,Suvs for Rent & Wedding Hire | Renting Services",
     template: "%s | SIRAA", // ← "Toyota Premio | SIRAA"
   },
   description:
@@ -502,6 +502,8 @@ export const metadata: Metadata = {
     "Licensed tourist transport",
     "Professional rent a car SL",
     "Best vehicle rental platform",
+    "Top car hire service Sri Lanka",
+    "Car for Rent | Wedding Car Hire | Van for Rent | Renting Services"
   ],
   openGraph: {
     siteName: "SIRAA",

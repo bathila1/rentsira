@@ -72,9 +72,7 @@ Toyota Premio</p>
                 lineHeight: 1.6,
               }}
             >
-              Sri Lanka's premier vehicle rental platform. Find the right
-              vehicle for every journey.
-
+              Sri Lanka's premier vehicle rental platform. Car for Rent | Wedding Car Hire | Van for Rent | Renting Services
             </p>
             
           </div>
