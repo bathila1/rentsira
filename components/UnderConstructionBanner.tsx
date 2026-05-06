@@ -2,10 +2,22 @@
 
 import React, { useEffect, useState } from 'react';
 
+// Define the shape of our particle object for TypeScript
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+  delay: number;
+}
+
 const ComingSoonPopup = () => {
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
-  const [particles, setParticles] = useState([]);
+  
+  // Add the <Particle[]> type to useState
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
     // Only show if user hasn't dismissed it this session
@@ -17,7 +29,7 @@ const ComingSoonPopup = () => {
   }, []);
 
   useEffect(() => {
-    const p = Array.from({ length: 14 }, (_, i) => ({
+    const p: Particle[] = Array.from({ length: 14 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
