@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import SearchBarBig from "@/components/SearchBarBig";
 import RequestButton from "@/components/RequestButton";
 import Image from "next/image";
+import UnderConstructionBanner from "@/components/UnderConstructionBanner";
 
 const title = "Cars,Vans,Suvs for Rent & Wedding Hire | Renting Services";
 const description =
@@ -546,6 +547,7 @@ export default async function Home() {
     <div className="page">
       {/* <Header /> */}
 
+      <UnderConstructionBanner />
       {/* ─── HERO ─── */}
       <section className="hero">
         <div>
