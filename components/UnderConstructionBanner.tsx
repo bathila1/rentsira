@@ -2,42 +2,48 @@
 
 import React, { useEffect, useState } from 'react';
 
-
-
-
-
-
 // ============================================================
 // THEME VARIABLES — Edit these to change the colour scheme
 // ============================================================
+
+// // Purple theme:
+// // primary: '#7c3aed', primaryHover: '#6d28d9', primaryLight: '#c4b5fd',
+// // bgGrad1: '#1a0530', bgGrad3: '#130520',
+
+// // Blue theme:
+// primary: '#0ea5e9', primaryHover: '#0284c7', primaryLight: '#7dd3fc',
+// bgGrad1: '#021520', bgGrad3: '#010d15',
+
+// // red
+//   // Primary accent colour (used for glow, borders, buttons, dots, etc.)
+//   // primary:          '#dc2626',       // e.g. '#7c3aed' for purple, '#0ea5e9' for blue
+//   // primaryHover:     '#b91c1c',       // slightly darker shade for hover states
+//   // primaryLight:     '#ff8c8c',       // lighter tint used in gradients & headline
+
+//   // // Card background gradient stops
+//   // bgGrad0:          '#0a0a0a',       // top-left corner
+//   // bgGrad1:          '#1a0505',       // mid tint (should echo primary hue)
+//   // bgGrad2:          '#0f0f0f',       // lower area
+//   // bgGrad3:          '#150303',       // bottom-right corner (should echo primary hue)
 const THEME = {
-// Purple theme:
-// primary: '#7c3aed', primaryHover: '#6d28d9', primaryLight: '#c4b5fd',
-// bgGrad1: '#1a0530', bgGrad3: '#130520',
-
-// Blue theme:
-primary: '#0ea5e9', primaryHover: '#0284c7', primaryLight: '#7dd3fc',
-bgGrad1: '#021520', bgGrad3: '#010d15',
-
-// red
-  // Primary accent colour (used for glow, borders, buttons, dots, etc.)
-  // primary:          '#dc2626',       // e.g. '#7c3aed' for purple, '#0ea5e9' for blue
-  // primaryHover:     '#b91c1c',       // slightly darker shade for hover states
-  // primaryLight:     '#ff8c8c',       // lighter tint used in gradients & headline
-
-  // // Card background gradient stops
-  // bgGrad0:          '#0a0a0a',       // top-left corner
-  // bgGrad1:          '#1a0505',       // mid tint (should echo primary hue)
-  // bgGrad2:          '#0f0f0f',       // lower area
-  // bgGrad3:          '#150303',       // bottom-right corner (should echo primary hue)
+  // Blue theme:
+  primary: '#0ea5e9', 
+  primaryHover: '#0284c7', 
+  primaryLight: '#7dd3fc',
+  
+  // Card background gradient stops
+  bgGrad0: '#0a0a0a', // Added missing top-left corner
+  bgGrad1: '#021520', 
+  bgGrad2: '#0f0f0f', // Added missing lower area
+  bgGrad3: '#010d15',
 
   // Overlay backdrop colour
-  overlayBg:        'rgba(0, 0, 0, 0.82)',
+  overlayBg: 'rgba(0, 0, 0, 0.82)',
 
   // Text colours
-  textBody:         'rgba(255,255,255,0.45)',
-  textMuted:        'rgba(255,255,255,0.18)',
-  textSecondary:    'rgba(255,255,255,0.35)',
+  textBody: 'rgba(255,255,255,0.45)',
+  textMuted: 'rgba(255,255,255,0.18)',
+  textSecondary: 'rgba(255,255,255,0.35)',
 };
 // ============================================================
 
