@@ -209,7 +209,7 @@ export default function BookingRequestPage() {
           </div>
           <h1 style={styles.successTitle}>Request Submitted!</h1>
           <p style={styles.successText}>
-            Thank you for choosing SIRAA.LK. We've received your request and our
+            Thank you for choosing RENTA.LK. We've received your request and our
             team will get back to you shortly to confirm the availability.
           </p>
           <div

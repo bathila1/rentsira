@@ -181,7 +181,7 @@ Toyota Premio</p>
             </p>
           </Link>
           <p style={{ fontSize: "0.7rem", color: "var(--neutral-700)" }}>
-            © {new Date().getFullYear()} Siraa.lk. All rights reserved.
+            © {new Date().getFullYear()} SIRAA | (Renta.lk). All rights reserved.
           </p>
         </div>
       </div>

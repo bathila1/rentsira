@@ -9,7 +9,7 @@ export default function RefundPolicy() {
 
       <div className="prose prose-blue max-w-none space-y-8 text-lg leading-relaxed">
         <p>
-          Thank you for using <strong>Siraa.lk</strong>. We value your satisfaction and strive to provide a transparent and reliable marketplace for vehicle transactions. If you are not completely satisfied with a service or transaction, we are here to help.
+          Thank you for using <strong>Renta.lk</strong>. We value your satisfaction and strive to provide a transparent and reliable marketplace for vehicle transactions. If you are not completely satisfied with a service or transaction, we are here to help.
         </p>
 
         <section>
@@ -53,7 +53,7 @@ export default function RefundPolicy() {
         <section>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">5. Dispute Resolution</h2>
           <p>
-            If there is a disagreement between a buyer and a seller regarding a transaction, Siraa may act as a mediator but does not guarantee a specific outcome. Users are encouraged to resolve disputes amicably before requesting a refund. (We - Siraa.lk Just act as a mediator. We do not involve in any disputes between buyers and sellers. )
+            If there is a disagreement between a buyer and a seller regarding a transaction, Siraa may act as a mediator but does not guarantee a specific outcome. Users are encouraged to resolve disputes amicably before requesting a refund. (We - Renta.lk Just act as a mediator. We do not involve in any disputes between buyers and sellers. )
           </p>
           <p>We Just link the Renter and the customer together. Users must select renters at their own convenience. and the renters must select their customers at their own risk.</p>
         </section>

@@ -1,8 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-
-const ADMIN_EMAIL = "admin@siraa.lk";
+// NEXT_PUBLIC_ADMIN_EMAIL
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@renta.lk";
 
 export default async function AdminLayout({
   children,

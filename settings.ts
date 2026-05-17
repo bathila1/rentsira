@@ -1,5 +1,5 @@
 const settingsData = {
-  WebDomain: "siraa.lk",
+  WebDomain: "renta.lk",
   WebName: "SIRAA",
   WebTitle: "SIRAA",
   FooterText: "Developed with ❤️ by Bathila Sanvidu",

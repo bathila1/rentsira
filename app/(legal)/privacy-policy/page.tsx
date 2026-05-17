@@ -8,7 +8,7 @@ export default function PrivacyPolicy() {
 
       <div className="prose prose-blue max-w-none space-y-8 text-lg leading-relaxed">
         <p>
-          At <strong>Siraa.lk</strong>, we are committed to protecting the privacy and security of our customers&apos; personal information. This Privacy Policy outlines how we collect, use, and safeguard your information when you visit our website or use our services. By using Siraa, you consent to the practices described in this policy.
+          At <strong>Renta.lk</strong>, we are committed to protecting the privacy and security of our customers&apos; personal information. This Privacy Policy outlines how we collect, use, and safeguard your information when you visit our website or use our services. By using Siraa, you consent to the practices described in this policy.
         </p>
 
         <section>

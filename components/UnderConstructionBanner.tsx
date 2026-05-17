@@ -292,7 +292,7 @@ const ComingSoonPopup = () => {
             <div className="cs-marquee-track">
               {[...Array(2)].map((_, ri) => (
                 <React.Fragment key={ri}>
-                  {['🔧 UNDER CONSTRUCTION','⚡ COMING SOON','🚗 SIRAA.LK','🛠️ LAUNCHING SHORTLY','🔥 STAY TUNED','📢 BIG THINGS AHEAD'].map((item, i) => (
+                  {['🔧 UNDER CONSTRUCTION','⚡ COMING SOON','🚗 RENTA.LK','🛠️ LAUNCHING SHORTLY','🔥 STAY TUNED','📢 BIG THINGS AHEAD'].map((item, i) => (
                     <span key={i} style={{
                       display: 'inline-flex', alignItems: 'center', gap: '10px',
                       padding: '0 24px',
@@ -372,7 +372,7 @@ const ComingSoonPopup = () => {
               lineHeight: 1.05,
               margin: '0 0 10px',
             }}>
-              SIRAA.LK IS<br />COMING SOON
+              RENTA.LK IS<br />COMING SOON
             </h2>
 
             {/* Description */}
@@ -421,7 +421,7 @@ const ComingSoonPopup = () => {
             </button>
 
             <p style={{ textAlign: 'center', marginTop: '10px', fontSize: '10px', color: THEME.textMuted, letterSpacing: '0.06em' }}>
-              &copy; 2024 SIRAA.LK - All Rights Reserved
+              &copy; 2024 RENTA.LK - All Rights Reserved
             </p>
           </div>
 

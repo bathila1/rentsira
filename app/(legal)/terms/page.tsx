@@ -9,7 +9,7 @@ export default function TermsAndConditions() {
 
       <div className="prose prose-blue max-w-none space-y-8 text-lg leading-relaxed">
         <p>
-          Welcome to <strong>Siraa.lk</strong>. These Terms and Conditions govern your use of our platform and the services we provide. By accessing or using Siraa, you agree to be bound by these terms. Please read them carefully.
+          Welcome to <strong>Renta.lk</strong>. These Terms and Conditions govern your use of our platform and the services we provide. By accessing or using Siraa, you agree to be bound by these terms. Please read them carefully.
         </p>
 
         <section>
@@ -23,7 +23,7 @@ export default function TermsAndConditions() {
 
         <section>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">2. Marketplace Rules</h2>
-          <p className="mb-4">Siraa.lk acts as a facilitator connecting buyers, sellers, and renters. As a user, you agree that:</p>
+          <p className="mb-4">Renta.lk acts as a facilitator connecting buyers, sellers, and renters. As a user, you agree that:</p>
           <ul className="list-disc ml-8 space-y-3">
             <li><strong>Sellers/Owners:</strong> Must provide accurate descriptions, high-quality images, and honest information about the vehicle&apos;s condition and legal status.</li>
             <li><strong>Buyers/Renters:</strong> Must use the platform to communicate and complete transactions in good faith.</li>
@@ -46,14 +46,14 @@ export default function TermsAndConditions() {
         <section>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">4. Intellectual Property</h2>
           <p>
-            All content on Siraa.lk, including logos, text, graphics, and software, is the property of Siraa or its licensors and is protected by copyright and other intellectual property laws. Users retain ownership of the photos and descriptions they upload but grant Siraa a license to display them.
+            All content on Renta.lk, including logos, text, graphics, and software, is the property of Siraa or its licensors and is protected by copyright and other intellectual property laws. Users retain ownership of the photos and descriptions they upload but grant Siraa a license to display them.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">5. Limitation of Liability</h2>
           <p>
-            Siraa.lk is a marketplace and <strong>does not own or inspect</strong> the vehicles listed by users. To the fullest extent permitted by law:
+            Renta.lk is a marketplace and <strong>does not own or inspect</strong> the vehicles listed by users. To the fullest extent permitted by law:
           </p>
           <ul className="list-disc ml-8 space-y-3 mt-4">
             <li>Siraa is not liable for the condition, safety, or legality of any vehicle listed on the platform.</li>
