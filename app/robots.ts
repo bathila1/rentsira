@@ -1,15 +1,26 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from "next";
+import { absoluteUrl } from "@/utils/seo";
 
 export default function robots(): MetadataRoute.Robots {
-  // Use the environment variable, or fallback to localhost during dev
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: '/seller/dashboard/', 
-    },
-    sitemap: `${baseUrl}sitemap.xml`,
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        // Keep private and non-indexable surfaces out of the crawl budget.
+        // These pages either require a login or produce no useful search
+        // result, and crawling them wastes the allowance for real listings.
+        disallow: [
+          "/admin",
+          "/seller",
+          "/api/",
+          "/auth/",
+          "/unauthorized",
+          "/maintenance",
+        ],
+      },
+    ],
+    sitemap: absoluteUrl("/sitemap.xml"),
+    host: absoluteUrl("/"),
   };
 }

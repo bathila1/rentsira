@@ -1,250 +1,108 @@
-import { createClient } from "@/utils/supabase/server";
-import FilterBar from "./components/FilterBar";
-import VehicleCard from "./components/VehicleCard";
-import Pagination from "./components/Pagination";
 import { Suspense } from "react";
-import Header from "@/components/Header";
-import "../../globals.css";
-
 import type { Metadata } from "next";
-import BackButton from "./[id]/components/BackBtn";
-import RequestButton from "@/components/RequestButton";
+
+import FilterBar from "./components/FilterBar";
+import VehicleResults, {
+  VehicleResultsSkeleton,
+  type ExploreParams,
+} from "./components/VehicleResults";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { absoluteUrl } from "@/utils/seo";
+
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | undefined }>;
+  searchParams: Promise<ExploreParams>;
 }): Promise<Metadata> {
   const params = await searchParams;
 
   const parts: string[] = [];
-
   if (params.make) parts.push(params.make);
   if (params.model) parts.push(params.model);
   if (params.type) parts.push(params.type);
   if (params.year) parts.push(params.year);
-  if (params.district) parts.push(`in ${params.district}`);
   if (params.fuel_type) parts.push(params.fuel_type);
-  if (params.with_driver === "true") parts.push("With Driver");
-  if (params.with_driver === "false") parts.push("Without Driver");
-  if (params.seat_count) parts.push(`${params.seat_count} seats`);
+  if (params.seat_count) parts.push(`${params.seat_count} seater`);
 
-  const title =
-    parts.length > 0
-      ? `${parts.join(" ")} for Rent`
-      : "Explore Vehicles for Rent";
+  const where = params.district ? ` in ${params.district}` : " in Sri Lanka";
+  const subject = parts.length > 0 ? parts.join(" ") : "Vehicles";
 
+  const title = `${subject} for Rent${where} — Compare Daily Rates`;
   const description =
     parts.length > 0
-      ? `Find ${parts.join(" ")} rental vehicles in Sri Lanka on SIRAA. Compare rates and contact Renters directly.`
-      : "Browse hundreds of vehicles for rent across all 25 districts in Sri Lanka.";
+      ? `Find ${subject.toLowerCase()} for rent${where}. Compare daily rates from local owners, with or without a driver. No booking fee.`
+      : `Browse vehicles for rent across all 25 districts of Sri Lanka. Cars, vans, SUVs and buses from local owners, with or without a driver.`;
 
-  return { title, description };
-}
+  // Filtered result pages are near-duplicates of each other and of the /rent
+  // landing pages. Letting Google index every filter combination splits ranking
+  // signals across hundreds of thin URLs, so only the unfiltered page is
+  // indexable — links are still followed so listings get discovered.
+  const hasFilters = Object.keys(params).some((k) => k !== "page" && params[k]);
 
-const ITEMS_PER_PAGE = 12;
-
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return {
+    title,
+    description,
+    alternates: { canonical: absoluteUrl("/explore") },
+    robots: hasFilters
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
+  };
 }
 
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | undefined }>;
+  searchParams: Promise<ExploreParams>;
 }) {
-  const supabase = await createClient();
   const params = await searchParams;
 
-  const page = parseInt(params.page || "1");
-  const type = params.type || "";
-  const district = params.district || "";
-  const withDriver = params.with_driver || "";
-  const userLat = params.lat ? parseFloat(params.lat) : null;
-  const userLng = params.lng ? parseFloat(params.lng) : null;
-
-  // ─── AI search params ───
-  const make = params.make || "";
-  const model = params.model || "";
-  const year = params.year || "";
-  const fuelType = params.fuel_type || "";
-  const description = params.description || "";
-  const seat_count = params.seat_count || "";
-
-  // let query = supabase
-  //   .from("uploaded_rent_vehicles")
-  //   .select("*", { count: "exact" });
-
-  // ✅ AFTER — all fields supported
-  let query = supabase
-    .from("uploaded_rent_vehicles")
-    .select("*", { count: "exact" });
-
-  // Filter bar params
-  if (type) query = query.ilike("type", type);
-  if (district) query = query.ilike("district", district);
-  if (withDriver === "true") query = query.eq("with_driver", true);
-  if (withDriver === "false") query = query.eq("with_driver", false);
-
-  // AI search params
-  if (make) query = query.ilike("make", `%${make}%`);
-  if (model) query = query.ilike("model", `%${model}%`);
-  if (year) query = query.eq("year", parseInt(year));
-  if (fuelType) query = query.ilike("fuel_type", fuelType);
-  if (seat_count) query = query.eq("seat_count", parseInt(seat_count));
-  if (description) query = query.ilike("description", `%${description}%`);
-
-  let vehicles: any[] = [];
-  let totalPages = 1;
-  let totalCount = 0;
-
-  if (userLat !== null && userLng !== null) {
-    const { data } = await query;
-    const sorted = (data || [])
-      .map((v) => ({
-        ...v,
-        distance: haversineDistance(userLat, userLng, v.latitude, v.longitude),
-      }))
-      .sort((a, b) => a.distance - b.distance);
-    totalCount = sorted.length;
-    totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-    vehicles = sorted.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  } else {
-    const from = (page - 1) * ITEMS_PER_PAGE;
-    const to = from + ITEMS_PER_PAGE - 1;
-    const { data, count } = await query
-      .range(from, to)
-      .order("bumped_until", { ascending: false, nullsFirst: false })
-      .order("id", { ascending: false });
-    vehicles = data || [];
-    totalCount = count || 0;
-    totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  }
+  // Changing any filter must remount the results boundary, otherwise the
+  // previous query's cards stay on screen while the new one runs.
+  const resultsKey = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v) as [string, string][],
+  ).toString();
 
   return (
     <div className="page">
       <Header />
-      <div
+
+      <main
         className="container"
-        style={{ padding: "var(--space-2) var(--space-4)" }}
+        style={{ padding: "var(--space-4) var(--space-4) var(--space-10)" }}
       >
-        {/* <Link
-          href={}
-          className="btn btn-ghost btn-sm"
-          style={{
-            //position right top
-            position: "absolute",
-            // top: "var(--space-4)",
-            right: "var(--space-10)",
-            display: "inline-flex",
-          }}
-        >
-          {"←"} Back
-        </Link> */}
-{/* only visible to laptops and pcs, hide from mobile devices */}
+        <h1 className="explore-title">
+          {params.district
+            ? `Vehicles for rent in ${params.district}`
+            : "Vehicles for rent"}
+        </h1>
 
-        <div  className="hiddenFromMobile" >
-          {/* ─── Page Header ─── */}
-          <div style={{ marginBottom: "var(--space-6)" }}>
-            {/* <p className="label" style={{ marginBottom: "var(--space-1)" }}>
-            Sri Lanka
-          </p> */}
+        {/* Filters render immediately, on every screen size. They used to sit
+            inside a `hiddenFromMobile` wrapper, which left phone users — most
+            of this audience — with no way to narrow the list at all. */}
+        <Suspense
+          fallback={
             <div
+              className="skeleton"
               style={{
-                display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: "var(--space-2)",
+                height: "60px",
+                borderRadius: "var(--radius-xl)",
+                marginBottom: "var(--space-6)",
               }}
-            >
-              <p
-                style={{ fontSize: "0.875rem", color: "var(--text-tertiary)" }}
-              >
-                {userLat && (
-                  <span
-                    style={{
-                      marginLeft: "var(--space-2)",
-                      color: "var(--color-primary)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    📍 Sorted by distance
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* ─── Filter Bar ─── */}
-          <Suspense
-            fallback={
-              <div
-                className="skeleton"
-                style={{
-                  height: "60px",
-                  borderRadius: "var(--radius-xl)",
-                  marginBottom: "var(--space-6)",
-                }}
-              />
-            }
-          >
-            <FilterBar />
-          </Suspense>
-        </div>
-
-        <div>
-          {totalCount.toLocaleString()} vehicle{totalCount !== 1 ? "s" : ""}{" "}
-          available
-        </div>
-        {/* ─── Empty State ─── */}
-        {vehicles.length === 0 ? (
-          <div className="empty-state">
-            <div>
-              <RequestButton />
-              <p className="empty-state-sub">
-                Submit a request We will find a perfect match for you as soon as
-                possible
-              </p>
-            </div>
-        <BackButton />
-
-            <span className="empty-state-icon">🚘</span>
-          </div>
-        ) : (
-          // ─── Vehicle Grid ───
-          <div
-            className="stagger"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: "var(--space-4)",
-            }}
-          >
-            {vehicles.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} />
-            ))}
-          </div>
-        )}
-
-        {/* ─── Pagination ─── */}
-        <Suspense>
-          <Pagination page={page} totalPages={totalPages} />
+            />
+          }
+        >
+          <FilterBar />
         </Suspense>
-      </div>
+
+        {/* Only the results wait on the database, so the page frame and the
+            filters are usable while the query runs. */}
+        <Suspense key={resultsKey} fallback={<VehicleResultsSkeleton />}>
+          <VehicleResults params={params} />
+        </Suspense>
+      </main>
+
+      <Footer />
     </div>
   );
 }

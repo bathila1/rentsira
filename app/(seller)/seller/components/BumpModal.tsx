@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/utils/supabase'
+import WhatsAppPayButton from '@/components/WhatsAppPayButton'
+import { coerceSettings, DEFAULT_SETTINGS, type SiteSettings } from '@/utils/site-settings'
 
 const BUMP_OPTIONS = [
   { label: '6 Hours', hours: 6,   tag: '',        desc: 'Quick visibility boost' },
@@ -26,8 +28,16 @@ export default function BumpModal({ vehicle, onClose, onSuccess }: {
   const [timeLeft,    setTimeLeft]    = useState('')
   const [bumpHistory, setBumpHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  // Admin feature flags. Defaults keep bumping free if the read fails.
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SETTINGS)
 
   const isCurrentlyBumped = vehicle.bumped_until && new Date(vehicle.bumped_until) > new Date()
+
+  // Bumping is only self-service while it is free. Once it becomes a paid
+  // feature we cannot charge until the PayHere gateway is switched on, so the
+  // seller is handed to WhatsApp to arrange it manually instead.
+  const bumpIsFree = siteSettings.free_bump_enabled
+  const bumpNeedsContact = !bumpIsFree
 
   useEffect(() => {
     async function loadHistory() {
@@ -38,6 +48,15 @@ export default function BumpModal({ vehicle, onClose, onSuccess }: {
         .order('bumped_at', { ascending: false })
         .limit(5)
       setBumpHistory(data || [])
+
+      // Read the admin flags here rather than on every page load: this only
+      // runs when a seller actually opens the bump modal.
+      const { data: flags } = await supabase
+        .from('site_settings')
+        .select('payments_enabled, payhere_mode, free_bump_enabled')
+        .eq('id', 1)
+        .maybeSingle()
+      if (flags) setSiteSettings(coerceSettings(flags))
       if (data && data.length > 0) {
         const lastBump     = new Date(data[0].bumped_at)
         const cooldownExpiry = new Date(lastBump.getTime() + 6 * 3600000)
@@ -209,24 +228,53 @@ export default function BumpModal({ vehicle, onClose, onSuccess }: {
                 </div>
               )}
 
-              {/* Free promo banner */}
-              <div style={{
-                background: 'var(--color-success-light)',
-                border: '1px solid var(--color-success-border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--space-3)',
-                display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
-              }}>
-                <span style={{ fontSize: '1.5rem' }}>🎁</span>
-                <div>
-                  <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-success)' }}>
-                    Bumping is FREE right now!
-                  </p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-success)', opacity: 0.8 }}>
-                    Premium bump packages coming soon
-                  </p>
+              {/* Free promo banner — shown while bumping costs nothing */}
+              {bumpIsFree && (
+                <div style={{
+                  background: 'var(--color-success-light)',
+                  border: '1px solid var(--color-success-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-3)',
+                  display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                }}>
+                  <span style={{ fontSize: '1.5rem' }}>🎁</span>
+                  <div>
+                    <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-success)' }}>
+                      Bumping is FREE right now!
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-success)', opacity: 0.8 }}>
+                      Premium bump packages coming soon
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Paid feature, but no live gateway yet — route to WhatsApp */}
+              {bumpNeedsContact && (
+                <div style={{
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-4)',
+                }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Bumping is a premium feature
+                  </p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
+                    Online payments are not open yet. Message us and we will bump
+                    your ad for you.
+                  </p>
+                  <WhatsAppPayButton
+                    label="Bump via WhatsApp"
+                    message={
+                      'Hi! I would like to bump my listing on SIRAA: ' +
+                      vehicle.make + ' ' + vehicle.model +
+                      ' (' + vehicle.year + '), duration ' + selected + ' hours'
+                    }
+                    hint="We usually reply within a few minutes."
+                  />
+                </div>
+              )}
 
               {/* Duration picker */}
               <div>
@@ -395,14 +443,16 @@ export default function BumpModal({ vehicle, onClose, onSuccess }: {
             <button onClick={onClose} className="btn btn-ghost" style={{ flex: 1 }}>
               Cancel
             </button>
-            <button
-              onClick={handleBump}
-              disabled={status === 'loading'}
-              className="btn btn-primary"
-              style={{ flex: 2 }}
-            >
-              {status === 'loading' ? '⏳ Processing...' : '🔥 Bump Now — FREE'}
-            </button>
+            {bumpIsFree && (
+              <button
+                onClick={handleBump}
+                disabled={status === 'loading'}
+                className="btn btn-primary"
+                style={{ flex: 2 }}
+              >
+                {status === 'loading' ? '⏳ Processing...' : '🔥 Bump Now — FREE'}
+              </button>
+            )}
           </div>
         )}
 

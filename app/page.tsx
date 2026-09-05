@@ -1,794 +1,357 @@
-import { createClient } from "@/utils/supabase/server";
+import { createPublicClient } from "@/utils/supabase/public";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Search from "@/components/Search";
-import { settingsData } from "@/settings";
-
-import type { Metadata } from "next";
 import SearchBarBig from "@/components/SearchBarBig";
 import RequestButton from "@/components/RequestButton";
-import Image from "next/image";
+import JsonLd from "@/components/JsonLd";
+import VehicleCard from "@/app/(user)/explore/components/VehicleCard";
 import UnderConstructionBanner from "@/components/UnderConstructionBanner";
+import Reveal from "@/components/Reveal";
 
-const title = "Cars,Vans,Suvs for Rent & Wedding Hire | Renting Services";
+import { settingsData, dynamicData } from "@/settings";
+import { absoluteUrl, faqJsonLd, slugify } from "@/utils/seo";
+
+/**
+ * The "coming soon" popup is switched off for the production launch.
+ *
+ * The component and this flag are both kept so it can be brought back for the
+ * next maintenance window by flipping the constant to true.
+ */
+const SHOW_UNDER_CONSTRUCTION_POPUP = false;
+
+// The homepage shows the newest listings. Rebuilding every 10 minutes serves
+// almost every visitor from cache instead of querying on each request.
+export const revalidate = 600;
+
+const title =
+  "Rent a Car in Sri Lanka — Cars, Vans & SUVs With or Without Driver";
 const description =
-  "Find and rent cars, vans, SUVs and more across all 25 districts in Sri Lanka. With or without driver.";
-const image = settingsData.FrontPageMainImage;
+  "Rent a car, van, SUV or bus anywhere in Sri Lanka. Compare daily rates from local owners in all 25 districts, with or without a driver. Contact the owner directly — no booking fee.";
 
 export const metadata: Metadata = {
-  title: title,
-  description: description,
-  keywords: [
-    "Rent a car Sri Lanka",
-    "Vehicle rental Sri Lanka",
-    "Car hire Sri Lanka",
-    "Budget car rental Sri Lanka",
-    "Cheap car hire Sri Lanka",
-    "Self drive car rental Sri Lanka",
-    "Rent a car with driver Sri Lanka",
-    "Monthly car rental Sri Lanka",
-    "Weekly car rental Sri Lanka",
-    "Long term car rental Sri Lanka",
-    "Car rental near me",
-    "Affordable vehicle hire",
-    "Best car rental Sri Lanka",
-    "Airport car rental Sri Lanka",
-    "Rent a car Colombo",
-    "Rent a car Gampaha",
-    "Rent a car Kandy",
-    "Rent a car Galle",
-    "Rent a car Jaffna",
-    "Wedding car hire Sri Lanka",
-    "Luxury car rental Sri Lanka",
-    "Van rental Sri Lanka",
-    "Rent a bike Sri Lanka",
-    "Scooter rental Sri Lanka",
-    "Tuk tuk rental Sri Lanka",
-    "24/7 car rental service",
-    "Emergency car rental",
-    "Online car booking Sri Lanka",
-    "Rent a car price Sri Lanka",
-    "Car rental deals Sri Lanka",
-    "Discount car rental",
-    "Rent a car without deposit",
-    "Rent a car Katunayake",
-    "Bandaranaike Airport car hire",
-    "Pick and drop car rental",
-    "Intercity car rental",
-    "Outstation car hire",
-    "Premium car rental",
-    "Economy car rental",
-    "Family car rental",
-    "SUV rental Sri Lanka",
-    "4x4 rental Sri Lanka",
-    "Electric car rental Sri Lanka",
-    "Hybrid car rental Sri Lanka",
-    "Petrol car rental",
-    "Diesel car rental",
-    "Rent a car Negombo",
-    "Rent a car Kalutara",
-    "Rent a car Kurunegala",
-    "Rent a car Matara",
-    "Toyota Premio for rent",
-    "Toyota Axio for rent",
-    "Toyota Allion for rent",
-    "Suzuki Alto for rent",
-    "Suzuki Wagon R for rent",
-    "Suzuki Spacia for rent",
-    "Toyota Vitz for rent",
-    "Honda Fit for rent",
-    "Honda Vezel for rent",
-    "Honda Grace for rent",
-    "Toyota Aqua for rent",
-    "Toyota Prius for rent",
-    "Nissan Leaf for rent",
-    "Nissan Dayz for rent",
-    "Perodua Bezza for rent",
-    "Perodua Viva Elite for rent",
-    "Toyota KDH for rent",
-    "KDH Super GL for rent",
-    "Commuter van for rent",
-    "Toyota Hiace for rent",
-    "Micro Panda for rent",
-    "Tata Nano for rent",
-    "Mahindra KUV100 for rent",
-    "MG ZS for rent",
-    "Mitsubishi Montero for rent",
-    "Toyota Land Cruiser for rent",
-    "Toyota Hilux for rent",
-    "Double cab for rent Sri Lanka",
-    "Bajaj Pulsar for rent",
-    "Honda Dio for rent",
-    "Yamaha FZ for rent",
-    "TVS Apache for rent",
-    "Hero Dash for rent",
-    "Scooty for rent Sri Lanka",
-    "Trail bike for rent Sri Lanka",
-    "Mountain bike for rent",
-    "Off road vehicle rental",
-    "7 seater car for rent",
-    "9 seater van for rent",
-    "14 seater KDH for rent",
-    "Luxury wedding car Sri Lanka",
-    "Mercedes Benz for rent SL",
-    "BMW for rent Sri Lanka",
-    "Audi for rent Sri Lanka",
-    "Vintage car for rent wedding",
-    "Classic car hire Sri Lanka",
-    "Limousine rental Sri Lanka",
-    "Automatic car for rent",
-    "Manual car for rent",
-    "Small car for rent",
-    "Big car for rent",
-    "Hatchback for rent",
-    "Sedan for rent",
-    "Crossover for rent",
-    "Luxury SUV hire",
-    "Vellfire for rent Sri Lanka",
-    "Alphard for rent Sri Lanka",
-    "Caravan for rent Sri Lanka",
-    "Motorhome rental Sri Lanka",
-    "Truck rental Sri Lanka",
-    "Lorry for rent Sri Lanka",
-    "Dimo Batta for rent",
-    "Buddy van for rent",
-    "Flatbed truck hire",
-    "Cooling van for rent",
-    "Delivery van rental",
-    "Work van hire",
-    "Passenger van rental",
-    "Tourist van Sri Lanka",
-    "Private chauffeur service",
-    "Rent a car Western Province",
-    "Rent a car Central Province",
-    "Rent a car Southern Province",
-    "Rent a car North",
-    "Rent a car Nugegoda",
-    "Rent a car Maharagama",
-    "Rent a car Dehiwala",
-    "Rent a car Mount Lavinia",
-    "Rent a car Ratmalana",
-    "Rent a car Moratuwa",
-    "Rent a car Panadura",
-    "Rent a car Horana",
-    "Rent a car Wattala",
-    "Rent a car Ja-Ela",
-    "Rent a car Kadawatha",
-    "Rent a car Kiribathgoda",
-    "Rent a car Malabe",
-    "Rent a car Battaramulla",
-    "Rent a car Thalawathugoda",
-    "Rent a car Kottawa",
-    "Rent a car Homagama",
-    "Rent a car Piliyandala",
-    "Rent a car Kesbewa",
-    "Rent a car Avissawella",
-    "Rent a car Hanwella",
-    "Rent a car Minuwangoda",
-    "Rent a car Mirigama",
-    "Rent a car Veyangoda",
-    "Rent a car Beruwala",
-    "Rent a car Bentota",
-    "Rent a car Hikkaduwa",
-    "Rent a car Unawatuna",
-    "Rent a car Weligama",
-    "Rent a car Tangalle",
-    "Rent a car Hambantota",
-    "Rent a car Peradeniya",
-    "Rent a car Katugastota",
-    "Rent a car Nuwara Eliya",
-    "Rent a car Ella",
-    "Rent a car Badulla",
-    "Rent a car Bandarawela",
-    "Rent a car Ratnapura",
-    "Rent a car Kegalle",
-    "Rent a car Chilaw",
-    "Rent a car Wennappuwa",
-    "Rent a car Marawila",
-    "Rent a car Puttalam",
-    "Rent a car Anuradhapura",
-    "Rent a car Polonnaruwa",
-    "Rent a car Dambulla",
-    "Rent a car Sigiriya",
-    "Rent a car Trincomalee",
-    "Rent a car Batticaloa",
-    "Rent a car Ampara",
-    "Rent a car Vavuniya",
-    "Rent a car Mannar",
-    "Rent a car Kilinochchi",
-    "Rent a car Mullaithivu",
-    "Rent a car Point Pedro",
-    "Rent a car Chavakachcheri",
-    "Car rental with GPS",
-    "Car rental with child seat",
-    "Unlimited mileage car rental",
-    "Limited mileage car hire",
-    "Fuel efficient rental cars",
-    "Car rental insurance Sri Lanka",
-    "No hidden cost car rental",
-    "Secure online payment car rental",
-    "Car rental customer reviews",
-    "Verified car owners Sri Lanka",
-    "Rent a car mobile app",
-    "Real time car availability",
-    "Instant booking car rental",
-    "Rent a car cancellation policy",
-    "Emergency roadside assistance",
-    "Car rental terms and conditions",
-    "Driver contact details",
-    "Car rental for foreigners",
-    "International driving permit Sri Lanka",
-    "Tourist car rental Sri Lanka",
-    "Expat car rental Sri Lanka",
-    "Diplomat car rental",
-    "Corporate car hire Sri Lanka",
-    "Staff transport service",
-    "Airport transfer service SL",
-    "Hotel drop off car rental",
-    "Train station pick up car rental",
-    "One way car rental Sri Lanka",
-    "Return car at different location",
-    "Clean rental cars",
-    "Sanitized car rental",
-    "Non smoking rental cars",
-    "Pet friendly car rental",
-    "New model cars for rent",
-    "2024 car models for rent",
-    "2025 car models for rent",
-    "Best rated car rental agency",
-    "Reliable car hire service",
-    "Trustworthy car rental Sri Lanka",
-    "Fast car rental booking",
-    "How to rent a car in Sri Lanka",
-    "Cost of renting a car in Sri Lanka",
-    "Self drive vs with driver Sri Lanka",
-    "Driving rules in Sri Lanka for foreigners",
-    "Best places to visit in Sri Lanka by car",
-    "Road trip guide Sri Lanka",
-    "Top 10 rental cars in Sri Lanka",
-    "Is it safe to drive in Sri Lanka",
-    "Document needed for car rental SL",
-    "Sri Lanka car rental FAQ",
-    "Tips for renting a car in SL",
-    "Avoid scams in car rental Sri Lanka",
-    "Best fuel for rental cars",
-    "How to extend car rental period",
-    "Returning a rental car checklist",
-    "Parking rules in Colombo",
-    "Highway tolls in Sri Lanka",
-    "Expressway entry points Sri Lanka",
-    "Southern Expressway guide",
-    "Katunayake Expressway guide",
-    "Central Expressway updates",
-    "Best time to book a rental car",
-    "Last minute car rental deals",
-    "Rent a car for long trips",
-    "Off roading in Sri Lanka tips",
-    "Finding cheap bike rentals SL",
-    "Maintaining a rental vehicle",
-    "Reporting car rental accidents",
-    "Inspecting a rental car before hire",
-    "why rent from us",
-    "Crew cab for rent",
-    "Refrigerated truck rental Sri Lanka",
-    "Freezer van for rent",
-    "Moving truck rental",
-    "Furniture transport Sri Lanka",
-    "Tipper truck for rent",
-    "Crane truck rental",
-    "Flatbed trailer hire",
-    "Recovery truck service",
-    "Car carrier trailer for rent",
-    "Water tanker rental Sri Lanka",
-    "Fuel tanker hire",
-    "Waste management vehicle rental",
-    "Office staff transport service",
-    "Factory worker transport",
-    "School van service Sri Lanka",
-    "Luxury bus for rent",
-    "29 seater bus rental",
-    "40 seater bus Sri Lanka",
-    "54 seater AC bus",
-    "Mini bus for rent",
-    "Crew transport van",
-    "Event logistics vehicle",
-    "Exhibition material transport",
-    "Heavy equipment transport",
-    "Low bed trailer for rent",
-    "Forklift rental Sri Lanka",
-    "Backhoe for rent",
-    "JCB for rent Sri Lanka",
-    "Boom truck hire",
-    "Mobile workshop van",
-    "Ambulance for rent Sri Lanka",
-    "Funeral hearse rental",
-    "Promotional vehicle hire",
-    "Mobile billboard truck",
-    "Branding vehicle rental",
-    "Campaign vehicle Sri Lanka",
-    "Election vehicle rental",
-    "Field visit vehicle",
-    "Site inspection car",
-    "Project vehicle rental",
-    "NGO vehicle hire",
-    "Government project car rental",
-    "UN vehicle rental SL",
-    "Mining vehicle hire",
-    "Plantation vehicle rental",
-    "Estate cab for rent",
-    "Tea estate transport",
-    "Off-road 4x4 for hire",
-    "Snorkel equipped 4x4",
-    "Winch equipped SUV",
-    "Camping gear vehicle",
-    "Roof top tent car rental",
-    "Overlanding vehicle Sri Lanka",
-    "Safari jeep for rent",
-    "Yala safari jeep hire",
-    "Wilpattu safari jeep",
-    "Udawalawe safari rental",
-    "Minneriya safari jeep",
-    "Bird watching tour vehicle",
-    "VIP backup vehicle hire",
-    "Presidential security convoy rental",
-    "Bulletproof car rental Sri Lanka",
-    "Armored vehicle hire",
-    "Bodyguard with vehicle service",
-    "Executive protection transport",
-    "Airport VIP lounge transfer",
-    "Red carpet event car",
-    "Award ceremony vehicle",
-    "Celebrity transport Sri Lanka",
-    "Music band van rental",
-    "Film production vehicle",
-    "Camera crew van",
-    "Equipment transport for shoots",
-    "Wedding car decoration service",
-    "Flower car for wedding",
-    "Bridal car Sri Lanka",
-    "Groom car rental",
-    "Bridesmaids transport",
-    "Homecoming car rental",
-    "Anniversary car hire",
-    "Birthday party limo",
-    "Graduation ceremony car",
-    "Prom night car rental",
-    "Bachelor party van",
-    "Bachelorette party bus",
-    "Night club drop off service",
-    "Late night transport Sri Lanka",
-    "Weekend getaway car",
-    "Holiday rental vehicle",
-    "Christmas vacation car",
-    "New Year trip vehicle",
-    "Avurudu holiday car rental",
-    "Vesak tour bus",
-    "Poson pilgrimage transport",
-    "Kandy Perahera transport",
-    "Nallur festival travel",
-    "Kataragama pilgrimage van",
-    "Church feast transport",
-    "Family reunion van",
-    "Sports team transport",
-    "Cricket team bus",
-    "Football team van",
-    "Athlete transport service",
-    "Cycling support vehicle",
-    "Marathon lead car",
-    "Golf club transport",
-    "Surfboard carrier car",
-    "Diving gear transport van",
-    "Island wide car rental",
-    "Round trip Sri Lanka car",
-    "Multi day tour vehicle",
-    "Chauffeur guide Sri Lanka",
-    "English speaking driver rental",
-    "Chinese speaking guide SL",
-    "German speaking driver",
-    "French speaking guide rental",
-    "Tamil speaking driver Colombo",
-    "Sinhala speaking driver",
-    "Cultural triangle tour car",
-    "Hill country tour van",
-    "Down south road trip car",
-    "East coast travel vehicle",
-    "Jaffna road trip van",
-    "Ancient cities tour",
-    "Wildlife photography tour vehicle",
-    "Adventure travel car rental",
-    "Budget traveler car SL",
-    "Backpacker bike rental",
-    "Luxury tourist transport",
-    "Boutique hotel transfer",
-    "Villa pick up service",
-    "Airbnb car rental service",
-    "Shore excursion for cruises",
-    "Passenger port pick up",
-    "Colombo Port transfer",
-    "Hambantota Port car hire",
-    "Domestic airport transfer",
-    "Cinnamon Air transfer car",
-    "Helitours pick up service",
-    "Whale watching transport",
-    "Turtle hatchery tour car",
-    "Tea factory visit van",
-    "Gem mine tour vehicle",
-    "Hiking trailhead transport",
-    "Adam’s Peak transport",
-    "Horton Plains van hire",
-    "Knuckles range 4x4",
-    "Ella to Kandy car service",
-    "Scenic route travel car",
-    "Expressway rapid transport",
-    "Highway intercity car",
-    "Overnight stay car rental",
-    "Multi city car hire",
-    "Cross province vehicle rental",
-    "Wayamba province car hire",
-    "Sabaragamuwa car rental",
-    "Uva province van hire",
-    "North Central car rental",
-    "Eastern province bike hire",
-    "Northern province car rental",
-    "Deep south travel van",
-    "Coastal road trip car",
-    "Cheapest car rental in Sri Lanka",
-    "Most reliable car rental SL",
-    "Top rated vehicle hire",
-    "Car rental price comparison",
-    "Best value for money rental",
-    "No credit card car rental",
-    "Cash payment car rental",
-    "Debit card car rental SL",
-    "Pay on arrival car hire",
-    "Last minute rental deals",
-    "Early bird car booking",
-    "Seasonal car rental offers",
-    "Festive season car deals",
-    "Low season car rental",
-    "Peak season vehicle hire",
-    "Budget friendly van hire",
-    "Premium car rental experience",
-    "First class vehicle hire",
-    "5 star car rental service",
-    "Professional driver hire SL",
-    "Experienced chauffeur rental",
-    "Safe driving car rental",
-    "Insured rental vehicles",
-    "Modern fleet car rental",
-    "Well maintained vehicles",
-    "Cleanest rental cars SL",
-    "Smoke free car rental",
-    "Female driver for rent SL",
-    "Elderly friendly car rental",
-    "Wheelchair accessible vehicle",
-    "Baby seat included car rental",
-    "Roof rack car for rent",
-    "Large boot space car",
-    "High ground clearance car",
-    "Fuel efficient car hire",
-    "Small engine car for rent",
-    "Powerful SUV for rent",
-    "Automatic transmission rental",
-    "Manual gear car for rent",
-    "Tiptronic car for rent",
-    "Daily staff transport",
-    "Monthly corporate car",
-    "Yearly vehicle lease",
-    "Corporate fleet management",
-    "Outsourced transport service",
-    "Bank staff transport",
-    "IT company transport",
-    "BPO staff van",
-    "Night shift transport",
-    "Employee pick and drop",
-    "Executive car lease",
-    "Operational lease Sri Lanka",
-    "Long term van lease",
-    "Short term vehicle rental",
-    "Flexible car rental plan",
-    "No contract car hire",
-    "Easy cancellation rental",
-    "Replacement vehicle service",
-    "Breakdown replacement car",
-    "Monthly bike lease",
-    "Weekly bike rental SL",
-    "Daily scooter hire",
-    "Student transport service",
-    "University shuttle van",
-    "Hospital shuttle service",
-    "Shopping mall shuttle",
-    "Supermarket delivery vehicle",
-    "E-commerce delivery van",
-    "Courier service vehicle",
-    "Pharmacy delivery bike",
-    "Food delivery scooter hire",
-    "Last mile delivery vehicle",
-    "Logistics partner Sri Lanka",
-    "Transport contractor SL",
-    "Authorized car rental agency",
-    "Registered vehicle hire company",
-    "SLTDA registered transport",
-    "Licensed tourist transport",
-    "Professional rent a car SL",
-    "Best vehicle rental platform",
-    "Top car hire service Sri Lanka",
-    "Car for Rent | Wedding Car Hire | Van for Rent | Renting Services"
-  ],
-
-  // ─── Open Graph (WhatsApp, Facebook previews) ───
+  title,
+  description,
+  alternates: { canonical: absoluteUrl("/") },
   openGraph: {
     title,
     description,
-    images: [{ url: image, width: 1200, height: 630 }],
+    url: absoluteUrl("/"),
+    images: [{ url: settingsData.FrontPageMainImage, width: 1200, height: 630 }],
     type: "website",
   },
-
-  // ─── Twitter card ───
   twitter: {
     card: "summary_large_image",
     title,
     description,
-    images: [image],
+    images: [settingsData.FrontPageMainImage],
   },
 };
 
-export default async function Home() {
-  // await new Promise((resolve) => setTimeout(resolve, 3000));
-  const supabase = await createClient();
+/** Districts people search for most — these become the main internal links. */
+const POPULAR_DISTRICTS = [
+  "Colombo",
+  "Gampaha",
+  "Kandy",
+  "Galle",
+  "Kurunegala",
+  "Kalutara",
+  "Matara",
+  "Jaffna",
+  "Anuradhapura",
+  "Ratnapura",
+  "Badulla",
+  "Puttalam",
+];
 
-  const { data: vehicles, count } = await supabase
+const HOME_FAQS = [
+  {
+    q: "How do I rent a vehicle on Renta.lk?",
+    a: "Search or browse the listings, open the one you want, then call or WhatsApp the owner directly using the button on the listing. You agree the dates, the price and the deposit with the owner. There is no booking fee and no commission.",
+  },
+  {
+    q: "Can I rent a car in Sri Lanka without a driver?",
+    a: "Yes. Many owners offer self-drive rentals. You will normally need a valid Sri Lankan driving licence or a recognised international driving permit, your NIC or passport, and a refundable deposit. Use the 'Without Driver' filter to see only self-drive listings.",
+  },
+  {
+    q: "How much does it cost to rent a car in Sri Lanka?",
+    a: "Rates depend on the model, the year, the district and whether a driver is included. Small hatchbacks are the cheapest, while vans, SUVs and wedding cars cost more. Every listing shows its daily rate, and weekly or monthly hire usually works out cheaper per day.",
+  },
+  {
+    q: "Can I list my own vehicle for rent?",
+    a: "Yes, and it is free. Create an account, verify your phone number and post your vehicle with photos and your rates. Renters contact you directly.",
+  },
+  {
+    q: "Which areas do you cover?",
+    a: "All 25 districts of Sri Lanka, including Colombo, Gampaha, Kandy, Galle, Kurunegala, Jaffna and Matara.",
+  },
+];
+
+export default async function Home() {
+  // Public data only, so no cookies — this keeps the page prerenderable.
+  const supabase = createPublicClient();
+
+  // Only the columns the cards render, and no `count: "exact"` — the count was
+  // making Postgres scan the whole table for a statistic the page then never
+  // displayed (the stat block that used it is commented out below).
+  const { data: vehicles } = await supabase
     .from("uploaded_rent_vehicles")
-    .select("*", { count: "exact" })
+    .select(
+      "id, make, model, year, type, district, daily_rate, fuel_type, seat_count, with_driver, image_urls, bumped_until",
+    )
     .order("created_at", { ascending: false })
     .limit(8);
-    
+
   return (
     <div className="page">
-      {/* <Header /> */}
+      <Header />
 
-      <UnderConstructionBanner />
-      {/* ─── HERO ─── */}
+      {SHOW_UNDER_CONSTRUCTION_POPUP && <UnderConstructionBanner />}
+
+      {/* ─────────────────────────── HERO ─────────────────────────── */}
       <section className="hero">
-        <div>
-          <Link
-            href="/login"
-            className="btn btn-primary btn-sm"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--space-2)",
-              position: "absolute",
-              top: "var(--space-4)", // Spacing from top
-              right: "var(--space-4)", // Spacing from right
-              zIndex: 10,
-              //end right
-            }}
-          >
-            Post Free
-          </Link>
-        </div>
-        <div
-          className="container"
-          style={{ textAlign: "center", position: "relative", zIndex: 1 }}
-        >
-          <div className="hero-eyebrow">
-            🇱🇰 Sri Lanka's Vehicle Rental Platform
-          </div>
+        {/* Slow colour blooms behind the copy. Purely decorative and
+            pointer-events:none, so they never intercept a tap. */}
+        <div className="hero-orb hero-orb-1" aria-hidden="true" />
+        <div className="hero-orb hero-orb-2" aria-hidden="true" />
 
-          <h1 className="hero-title">
-            Find Your
+        <div className="container hero-inner">
+          <p className="hero-eyebrow hero-rise hero-rise-1">
+            🇱🇰 Vehicle rentals across Sri Lanka
+          </p>
+
+          {/* The H1 is the target query in plain words, not a slogan. */}
+          <h1 className="hero-title hero-rise hero-rise-2">
+            Rent a vehicle
             <br />
-            <span className="accent">Rental Vehicle</span>
+            <span className="accent">Vehicles for Rent</span>
           </h1>
 
-          {/* <p
-            className="hero-sub"
-            style={{
-              margin: "0 auto",
-              textAlign: "center",
-              marginBottom: "var(--space-10)",
-            }}
-          >
-            {settingsData.FrontPageMainSmallText}
+          {/* <p className="hero-sub">
+            Cars, vans, SUVs and buses from local owners in all 25 districts —
+            with or without a driver. Contact the owner directly, no booking fee.
           </p> */}
-          <RequestButton />
 
-          <div>
-            <p
-              style={{
-                color: "white",
-                maxWidth: 480,
-                lineHeight: 1.6,
-                marginBottom: "var(--space-3)",
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
-            >
-              <b>Or</b>
-            </p>
-          </div>
+          <div className="hero-actions hero-rise hero-rise-3">
+            <SearchBarBig />
 
-          {/* Search */}
-          <SearchBarBig />
-          <div style={{ maxWidth: "720px", margin: "0 auto var(--space-12)" }}>
+            <p className="hero-or"> </p>
+
             <Search />
+
+            <div className="hero-request">
+              <p className="hero-request-text">
+                Can’t find what you need? Tell us and we’ll find it for you.
+              </p>
+              <RequestButton />
+            </div>
           </div>
 
-          {/* Stats */}
-          {/* <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "var(--space-8)",
-              flexWrap: "wrap",
-            }}
-          > */}
-            {/* <div className="stat-pill">
-              <div className="stat-pill-value">{count?.toLocaleString()}+</div>
-              <div className="stat-pill-label">Vehicles Listed</div>
-            </div> */}
+          {/* Answers the three things a renter wants to know before they
+              trust a listings site, without needing any live numbers. */}
+          <div className="trust-strip hero-rise hero-rise-4">
+            <span className="trust-item">
+              <span aria-hidden="true">📍</span>
+              <strong>25</strong> districts covered
+            </span>
+            <span className="trust-item">
+              <span aria-hidden="true">🤝</span>
+              <strong>No</strong> booking fee
+            </span>
+            <span className="trust-item">
+              <span aria-hidden="true">📞</span>
+              Contact owners <strong>directly</strong>
+            </span>
+          </div>
 
-            {/* <div style={{ width: '1px', height: '36px', backgroundColor: 'rgb(255 255 255 / 0.1)' }} /> 
-            <div className="stat-pill">
-              <div className="stat-pill-value">25</div>
-              <div className="stat-pill-label">Districts</div>
-            </div> */}
-            {/* <div style={{ width: '1px', height: '36px', backgroundColor: 'rgb(255 255 255 / 0.1)' }} /> */}
-            {/* <div className="stat-pill">
-              <div className="stat-pill-value">7</div>
-              <div className="stat-pill-label">Vehicle Types</div>
-            </div> */}
-          {/* </div> */}
+          <div className="scroll-cue hero-rise hero-rise-4" aria-hidden="true">
+            Scroll
+            <span aria-hidden="true">↓</span>
+          </div>
         </div>
       </section>
 
-      {/* ─── FEATURED VEHICLES ─── */}
-      <section style={{ padding: "var(--space-1) 0" }}>
+      {/* ───────────────── POPULAR LOCATIONS ─────────────────
+          These are the site's main internal links. Each one points at a
+          landing page built for the way people actually search. */}
+      <section className="section">
         <div className="container">
-          {/* Section header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              marginBottom: "var(--space-8)",
-            }}
-          >
-            {/* <div>
-              <p className="label">Recently Added</p>
-              <h2 style={{ marginTop: "var(--space-1)" }}>Latest Listings</h2>
-            </div> */}
-          </div>
+          <Reveal>
+            <h2 className="section-title section-title-accent">
+              Rent a vehicle by city
+            </h2>
+            <p className="section-sub">
+              Browse vehicles available for rent in Sri Lanka’s main districts.
+            </p>
+          </Reveal>
 
-          {/* Vehicle Grid */}
-          <div
-            className="stagger"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: "var(--space-4)",
-            }}
-          >
-            {vehicles?.map((car) => (
-              <Link
-                key={car.id}
-                href={`/explore/${car.id}`}
-                className="vehicle-card animate-fade-in"
-              >
-                {/* Image */}
-                <div
-                  style={{
-                    position: "relative",
-                    height: "100px",
-                    overflow: "hidden",
-                    backgroundColor: "var(--bg-subtle)",
-                  }}
-                >
-                  {car.image_urls?.[0] ? (
-                    <Image
-                      src={car.image_urls[0]}
-                      alt={`${car.make} ${car.model}`}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 260px"
-                      className="vehicle-card-image"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "2.5rem",
-                        color: "var(--neutral-300)",
-                      }}
-                    >
-                      🚗
-                    </div>
-                  )}
-
-                  {/* Type badge */}
-                  <span
-                    className="badge badge-dark"
-                    style={{
-                      position: "absolute",
-                      top: "10px",
-                      left: "10px",
-                      backdropFilter: "blur(8px)",
-                    }}
-                  >
-                    {car.type}
+          <div className="tile-grid">
+            {POPULAR_DISTRICTS.map((district, i) => (
+              // Capped stagger: past ~8 tiles the delay starts to feel like lag
+              // rather than polish.
+              <Reveal key={district} delay={Math.min(i, 7) * 60}>
+                <Link href={`/rent/${slugify(district)}`} className="tile">
+                  <span className="tile-icon" aria-hidden="true">
+                    📍
                   </span>
-
-                  {/* Driver badge */}
-                  {car.with_driver && (
-                    <span
-                      className="badge badge-red"
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                      }}
-                    >
-                      👨‍✈️ With Driver
-                    </span>
-                  )}
-                </div>
-
-                {/* Body */}
-                <div className="vehicle-card-body">
-                  <div className="vehicle-card-title">
-                    {car.make} {car.model}{" "}
-                    <span
-                      style={{
-                        fontWeight: 400,
-                        color: "var(--text-tertiary)",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      ({car.year})
-                    </span>
-                  </div>
-                  <div className="vehicle-card-sub">📍 {car.district}</div>
-
-                  <div
-                    style={{
-                      marginTop: "var(--space-3)",
-                      paddingTop: "var(--space-3)",
-                      borderTop: "1px solid var(--border-default)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div className="vehicle-card-price">
-                      Rs. {car.daily_rate?.toLocaleString()}
-                      <span>/day</span>
-                    </div>
-                    <span className="badge badge-gray">{car.fuel_type}</span>
-                  </div>
-                </div>
-              </Link>
+                  <span className="tile-label">Rent a car in {district}</span>
+                </Link>
+              </Reveal>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* CTA */}
-          <div style={{ textAlign: "center", marginTop: "var(--space-12)" }}>
-            <Link href="/login" className="btn btn-primary btn-lg">
-              🚗 Post Your Vehicle Free
-            </Link>
-            <br />
-            <br />
-            <RequestButton />
+      {/* ───────────────── BROWSE BY TYPE ───────────────── */}
+      <section className="section section-alt">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title section-title-accent">
+              Browse by vehicle type
+            </h2>
+            <p className="section-sub">
+              From a small hatchback for the week to a bus for a group trip.
+            </p>
+          </Reveal>
+
+          <div className="chip-row">
+            {dynamicData.vehicle_types.map((type, i) => (
+              <Reveal key={type} delay={Math.min(i, 7) * 50}>
+                <Link
+                  href={`/explore?type=${encodeURIComponent(type)}`}
+                  className="chip"
+                >
+                  {type}
+                </Link>
+              </Reveal>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* ───────────────── LATEST LISTINGS ───────────────── */}
+      <section className="section">
+        <div className="container">
+          <Reveal>
+            <div className="section-head">
+              <div>
+                <h2 className="section-title section-title-accent">
+                  Latest vehicles for rent
+                </h2>
+                <p className="section-sub">Recently added by owners.</p>
+              </div>
+              <Link href="/explore" className="btn btn-secondary btn-sm">
+                View all
+              </Link>
+            </div>
+          </Reveal>
+
+          {vehicles && vehicles.length > 0 ? (
+            <div className="vehicle-grid">
+              {vehicles.map((car, i) => (
+                <Reveal key={car.id} delay={Math.min(i, 7) * 60}>
+                  <VehicleCard vehicle={car as any} priority={i < 4} />
+                </Reveal>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <span className="empty-state-icon">🚘</span>
+              <p className="empty-state-sub">
+                No listings yet. Tell us what you need and we’ll find it.
+              </p>
+              <RequestButton />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ───────────────── HOW IT WORKS ───────────────── */}
+      <section className="section section-alt">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title section-title-accent">How it works</h2>
+            <p className="section-sub">
+              Three steps, no account needed to rent.
+            </p>
+          </Reveal>
+
+          <ol className="steps">
+            <Reveal as="li" className="step" delay={0}>
+              <span className="step-num">1</span>
+              <h3 className="step-title">Search</h3>
+              <p className="step-text">
+                Filter by district, vehicle type, seats and whether you want a
+                driver.
+              </p>
+            </Reveal>
+            <Reveal as="li" className="step" delay={110}>
+              <span className="step-num">2</span>
+              <h3 className="step-title">Compare</h3>
+              <p className="step-text">
+                Every listing shows the daily rate, year, fuel type and photos —
+                so you can compare before you call.
+              </p>
+            </Reveal>
+            <Reveal as="li" className="step" delay={220}>
+              <span className="step-num">3</span>
+              <h3 className="step-title">Contact the owner</h3>
+              <p className="step-text">
+                Call or WhatsApp the owner directly and agree the details. No
+                booking fee, no middleman.
+              </p>
+            </Reveal>
+          </ol>
+        </div>
+      </section>
+
+      {/* ───────────────── OWNER CTA ───────────────── */}
+      <section className="section">
+        <div className="container">
+          <Reveal className="owner-cta">
+            <div>
+              <h2 className="section-title" style={{ marginBottom: "8px" }}>
+                Own a vehicle? List it free
+              </h2>
+              <p className="section-sub" style={{ marginBottom: 0 }}>
+                Reach renters across Sri Lanka. Posting a listing costs nothing.
+              </p>
+            </div>
+            <Link href="/get-started" className="btn btn-primary btn-lg">
+              Post your vehicle free
+            </Link>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ───────────────── FAQ ─────────────────
+          Real answers to the questions people search for, which is what the
+          FAQ structured data below is built from. */}
+      <section className="section section-alt">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title section-title-accent">
+              Common questions
+            </h2>
+          </Reveal>
+
+          <dl className="faq-list" style={{ maxWidth: "75ch" }}>
+            {HOME_FAQS.map((f, i) => (
+              <Reveal key={f.q} className="faq-item" delay={Math.min(i, 5) * 70}>
+                <dt>{f.q}</dt>
+                <dd>{f.a}</dd>
+              </Reveal>
+            ))}
+          </dl>
         </div>
       </section>
 
       <Footer />
+
+      <JsonLd data={faqJsonLd(HOME_FAQS)} />
     </div>
   );
 }

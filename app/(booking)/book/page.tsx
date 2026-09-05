@@ -40,7 +40,14 @@ export default function BookingRequestPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  function validate(): boolean {
+  /**
+   * Returns the errors it found rather than just a boolean.
+   *
+   * The caller needs the actual keys to focus the first bad field, and reading
+   * `fieldErrors` straight after setFieldErrors() gave it the *previous*
+   * render's value — so the page scrolled to the wrong input, or to none.
+   */
+  function validate(): ValidationErrors {
     const errors: ValidationErrors = {};
 
     if (!form.renter_name.trim())
@@ -59,7 +66,7 @@ export default function BookingRequestPage() {
       errors.pickup_date = "Please select your pickup date";
 
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    return errors;
   }
 
   function handleChange(
@@ -87,14 +94,13 @@ export default function BookingRequestPage() {
     setError("");
     setFieldErrors({});
 
-    if (!validate()) {
-      // window.scrollTo({ top: 0, behavior: "smooth" });
-      // return;
+    const errors = validate();
 
-      // Scroll to error field this should be accurate so think deeper
-      const firstErrorField = document.querySelector(
-        `[name="${Object.keys(fieldErrors)[0]}"]`,
-      );
+    if (Object.keys(errors).length > 0) {
+      // Focus the first invalid field, using the errors we just computed.
+      const firstKey = Object.keys(errors)[0];
+      const firstErrorField = document.querySelector(`[name="${firstKey}"]`);
+
       if (firstErrorField) {
         firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
         (firstErrorField as HTMLElement).focus();

@@ -1,6 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '@/utils/supabase'
+import { sanitizeEmail, sanitizePhone, sanitizeText } from '@/utils/sanitize'
+
+const MAX_MESSAGE = 500
 
 const TOPICS = [
   'General Inquiry',
@@ -20,39 +24,53 @@ export default function ContactForm() {
     name: '', email: '', phone: '', topic: '', message: '',
   })
   const [status, setStatus] = useState<Status>('idle')
+  const [error, setError] = useState('')
 
   const set = (f: keyof typeof form, v: string) =>
     setForm((p) => ({ ...p, [f]: v }))
 
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
-  if (form.message.length > 500) return
+
+  // Previously this returned silently on an over-long message, leaving the
+  // button looking like it simply did nothing.
+  if (form.message.length > MAX_MESSAGE) {
+    setError(`Please keep your message under ${MAX_MESSAGE} characters.`)
+    setStatus('error')
+    return
+  }
+
+  const email = sanitizeEmail(form.email)
+  if (email === false) {
+    setError('Please enter a valid email address.')
+    setStatus('error')
+    return
+  }
+
+  setError('')
   setStatus('loading')
 
-  try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  // Strip tags and control characters before anything is stored or emailed.
+  const payload = {
+    name:    sanitizeText(form.name),
+    email:   email as string,
+    phone:   form.phone ? sanitizePhone(form.phone) : null,
+    topic:   sanitizeText(form.topic),
+    message: sanitizeText(form.message),
+  }
 
-    // 1️⃣ Save to DB
+  try {
+    // Reuses the shared browser client. Constructing a second one here created
+    // a duplicate GoTrue instance competing for the same auth storage key.
     const { error: dbError } = await supabase
       .from('contact_messages')
-      .insert([{
-        name:    form.name,
-        email:   form.email,
-        phone:   form.phone || null,
-        topic:   form.topic,
-        message: form.message,
-      }])
+      .insert([payload])
 
     if (dbError) throw new Error(dbError.message)
 
-    // 2️⃣ Send email notification
     const { error: fnError } = await supabase.functions.invoke(
       'send-contact-email',
-      { body: form }
+      { body: payload }
     )
 
     if (fnError) throw new Error(fnError.message)
@@ -61,6 +79,7 @@ export default function ContactForm() {
 
   } catch (err: any) {
     console.error('Contact form error:', err)
+    setError('Something went wrong. Please try again, or message us on WhatsApp.')
     setStatus('error')
   }
 }
@@ -173,6 +192,7 @@ export default function ContactForm() {
             placeholder="Tell us how we can help you..."
             required
             rows={5}
+            maxLength={MAX_MESSAGE}
             className="input textarea"
             style={{ resize: 'vertical', minHeight: '120px' }}
           />
@@ -180,14 +200,14 @@ export default function ContactForm() {
             fontSize: '0.73rem', color: 'var(--text-tertiary)',
             textAlign: 'right', marginTop: '4px',
           }}>
-            {form.message.length} / 500
+            {form.message.length} / {MAX_MESSAGE}
           </p>
         </div>
 
         {/* Error */}
         {status === 'error' && (
-          <div className="alert alert-error">
-            ❌ Something went wrong. Please try again.
+          <div className="alert alert-error" role="alert">
+            ❌ {error || 'Something went wrong. Please try again.'}
           </div>
         )}
 

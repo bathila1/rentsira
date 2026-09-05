@@ -1,56 +1,40 @@
 import Link from "next/link";
+import Image from "next/image";
+import type { VehicleRow } from "@/utils/types";
 
-interface Vehicle {
-  id: string;
-  type: string;
-  make: string;
-  model: string;
-  year: number;
-  image_urls: string[];
-  fuel_type: string;
-  with_driver: boolean;
-  daily_rate: number;
-  district: string;
-  bumped_until?: string;
-  distance?: number;
-  seat_count: number;
-}
-
-export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
+export default function VehicleCard({
+  vehicle: v,
+  priority = false,
+}: {
+  vehicle: VehicleRow;
+  /** Set on the first few cards so the largest visible image is not lazy-loaded. */
+  priority?: boolean;
+}) {
   const isBumped = v.bumped_until && new Date(v.bumped_until) > new Date();
+  const title = `${v.make} ${v.model} ${v.year}`;
 
   return (
     <Link
       href={`/explore/${v.id}`}
       className={`vehicle-card animate-fade-in ${isBumped ? "bumped" : ""}`}
+      // The whole card is one link, so give assistive tech the full label
+      // rather than making it stitch together the child text.
+      aria-label={`${title} for rent in ${v.district}, Rs. ${v.daily_rate?.toLocaleString()} per day`}
     >
       {/* Image */}
-      <div
-        style={{
-          position: "relative",
-          height: "100px",
-          overflow: "hidden",
-          background: "var(--bg-subtle)",
-        }}
-      >
+      <div className="vehicle-card-media">
         {v.image_urls?.[0] ? (
-          <img
+          <Image
             src={v.image_urls[0]}
-            alt={`${v.make} ${v.model}`}
+            alt={`${title} for rent in ${v.district}`}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
             className="vehicle-card-image"
+            priority={priority}
+            loading={priority ? undefined : "lazy"}
           />
         ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "2.5rem",
-              color: "var(--neutral-300)",
-            }}
-          >
+          <div className="vehicle-card-placeholder" aria-hidden="true">
             🚗
           </div>
         )}
@@ -60,71 +44,44 @@ export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
           className="badge badge-dark"
           style={{
             position: "absolute",
-            top: "10px",
-            left: "10px",
+            top: "8px",
+            left: "8px",
             backdropFilter: "blur(6px)",
           }}
         >
           {v.type}
         </span>
 
-        {/* Bumped badge */}
-        {isBumped && (
+        {/* Only one badge on the right, so they can never overlap */}
+        {isBumped ? (
           <span
             className="badge badge-red"
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-            }}
+            style={{ position: "absolute", top: "8px", right: "8px" }}
           >
             🔥 Featured
           </span>
-        )}
-
-        {/* Driver badge — only if not bumped (avoid overlap) */}
-        {v.with_driver && !isBumped && (
-          <span
-            className="badge"
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              background: "var(--neutral-900)",
-              color: "var(--neutral-0)",
-              border: "none",
-            }}
-          >
-            👨‍✈️  With Driver
-          </span>
+        ) : (
+          v.with_driver && (
+            <span
+              className="badge"
+              style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                background: "var(--neutral-900)",
+                color: "var(--neutral-0)",
+                border: "none",
+              }}
+            >
+              👨‍✈️ Driver
+            </span>
+          )
         )}
       </div>
 
       {/* Body */}
       <div className="vehicle-card-body">
-        <div
-          style={{
-            // right
-            position: "absolute",
-            // top: "10px",
-            right: "5px",
-          }}
-        >
-          <button style={{ cursor: "pointer"}} className="badge badge-red">👁️ View</button>
-        </div>
-
-        <div className="vehicle-card-title">
-          {v.make} {v.model}{" "}
-          <span
-            style={{
-              fontWeight: 400,
-              color: "var(--text-tertiary)",
-              fontSize: "0.83rem",
-            }}
-          >
-            ({v.year})
-          </span>
-        </div>
+        <div className="vehicle-card-title">{title}</div>
 
         <div className="vehicle-card-sub">
           📍 {v.district}
@@ -136,27 +93,20 @@ export default function VehicleCard({ vehicle: v }: { vehicle: Vehicle }) {
                 fontWeight: 600,
               }}
             >
-              • 🗺️ {v.distance.toFixed(1)} km
+              • {v.distance.toFixed(1)} km away
             </span>
           )}
         </div>
 
         {/* Price row */}
-        <div
-          style={{
-            marginTop: "var(--space-3)",
-            paddingTop: "var(--space-3)",
-            borderTop: "1px solid var(--border-default)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="vehicle-card-foot">
           <div className="vehicle-card-price">
             Rs. {v.daily_rate?.toLocaleString()}
             <span>/day</span>
           </div>
-          <span className="badge badge-gray">{v.seat_count ? v.seat_count + " seats": "-"}</span>
+          <span className="badge badge-gray">
+            {v.seat_count ? `${v.seat_count} seats` : v.fuel_type || "—"}
+          </span>
         </div>
       </div>
     </Link>

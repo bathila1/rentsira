@@ -1,13 +1,66 @@
-import { createClient } from "@/utils/supabase/server";
+import { cache } from "react";
+import { createPublicClient } from "@/utils/supabase/public";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ImageGallery from "./components/ImageGallery";
 import StickyCallBar from "./components/StickyCallBar";
 import type { Metadata } from "next";
 import BackButton from "./components/BackBtn";
+import JsonLd from "@/components/JsonLd";
+import {
+  SITE_URL,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  slugify,
+  vehicleJsonLd,
+} from "@/utils/seo";
 
-const SiteDomain = process.env.NEXT_PUBLIC_SITE_URL || "";
+const SiteDomain = SITE_URL;
+
+// A listing changes rarely once posted, so serve it from cache and refresh in
+// the background every 10 minutes.
+export const revalidate = 600;
+
+// Listings not in the prerendered set are rendered on first request and then
+// cached the same way, so a brand new listing is still reachable immediately.
+export const dynamicParams = true;
+
+/**
+ * Prerender the most recent listings at build time.
+ *
+ * These are the pages crawlers and shared links hit most, and having them ready
+ * as static HTML means no database round trip on that first visit. Older
+ * listings fall back to on-demand rendering plus the same ISR cache.
+ */
+export async function generateStaticParams() {
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("uploaded_rent_vehicles")
+    .select("id")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  return (data ?? []).map((v) => ({ id: String(v.id) }));
+}
+
+/**
+ * Loads the vehicle once per request.
+ *
+ * generateMetadata and the page component both need this row, and Next.js calls
+ * them separately — without `cache()` that was two identical round trips for
+ * every single page view.
+ */
+const getVehicle = cache(async (id: string) => {
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("uploaded_rent_vehicles")
+    .select("*")
+    .eq("id", id)
+    .single();
+  return data;
+});
 
 // Normalizes any Sri Lankan phone format to WhatsApp-ready international format
 function toWAPhone(phone: string | null | undefined): string {
@@ -30,24 +83,18 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const supabase = await createClient();
   const { id } = await params;
+  const vehicle = await getVehicle(id);
 
-  const { data: vehicle } = await supabase
-    .from("uploaded_rent_vehicles")
-    .select(
-      "make, model, year, district, daily_rate, fuel_type, with_driver, image_urls",
-    )
-    .eq("id", id)
-    .single();
+  if (!vehicle) return { title: "Vehicle not found" };
 
-  if (!vehicle)
-    return {
-      title: "Vehicle Not Found | SIRAA",
-    };
+  // Front-loads the words someone would actually type: model, year, "for rent",
+  // then the town. The rate goes in the title too because a visible price is
+  // what earns the click against the other results on the page.
+  const title = `${vehicle.make} ${vehicle.model} ${vehicle.year} for Rent in ${vehicle.district} — Rs. ${vehicle.daily_rate?.toLocaleString()}/day`;
 
-  const title = `${vehicle.make} ${vehicle.model} (${vehicle.year}) for Rent in ${vehicle.district}`;
-  const description = `Rent a ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()}/day. ${vehicle.with_driver ? "With Driver." : "Without Driver."} ${vehicle.fuel_type}. Book now on SIRAA.`;
+  const description = `Rent this ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.district} from Rs. ${vehicle.daily_rate?.toLocaleString()} per day. ${vehicle.with_driver ? "Driver included." : "Self-drive."}${vehicle.fuel_type ? ` ${vehicle.fuel_type}.` : ""}${vehicle.seat_count ? ` ${vehicle.seat_count} seats.` : ""} Call the owner directly — no booking fee.`;
+
   const image =
     vehicle.image_urls?.[0] ||
     `https://cdn.jsdelivr.net/gh/bathila1/web-assets/og-default.jpg`;
@@ -55,6 +102,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: absoluteUrl(`/explore/${id}`) },
 
     // ─── Open Graph (WhatsApp, Facebook previews) ───
     openGraph: {
@@ -78,16 +126,13 @@ export default async function VehicleDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const supabase = await createClient();
   const { id } = await params;
 
-  const { data: vehicle, error } = await supabase
-    .from("uploaded_rent_vehicles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // Served from the per-request cache populated by generateMetadata.
+  const vehicle = await getVehicle(id);
+  if (!vehicle) notFound();
 
-  if (error || !vehicle) notFound();
+  const supabase = createPublicClient();
 
   let sellerName = "Renter";
   let sellerPhone = null;
@@ -148,6 +193,30 @@ export default async function VehicleDetailPage({
       >
         {/* ─── BACK ─── back */}
         <BackButton />
+
+        {/* Breadcrumbs double as internal links up to the district landing
+            page, which is how link equity reaches those pages. */}
+        <nav aria-label="Breadcrumb" className="breadcrumbs">
+          <Link href="/">Home</Link>
+          <span aria-hidden="true"> › </span>
+          <Link href={`/rent/${slugify(vehicle.district || "")}`}>
+            Rent in {vehicle.district}
+          </Link>
+          {vehicle.type && (
+            <>
+              <span aria-hidden="true"> › </span>
+              <Link
+                href={`/rent/${slugify(vehicle.district || "")}/${slugify(vehicle.type)}`}
+              >
+                {vehicle.type}
+              </Link>
+            </>
+          )}
+          <span aria-hidden="true"> › </span>
+          <span aria-current="page">
+            {vehicle.make} {vehicle.model}
+          </span>
+        </nav>
         {/* ─── TOP GRID ─── */}
         <div
           style={{
@@ -194,7 +263,8 @@ export default async function VehicleDetailPage({
                   marginBottom: "var(--space-2)",
                 }}
               >
-                {vehicle.make} {vehicle.model}
+                {vehicle.make} {vehicle.model} {vehicle.year}
+                <span className="h1-qualifier"> for Rent in {vehicle.district}</span>
               </h1>
 
               <p style={{ fontSize: "0.9rem", color: "var(--text-tertiary)" }}>
@@ -600,6 +670,23 @@ export default async function VehicleDetailPage({
       </div>
 
       <Footer />
+
+      <JsonLd
+        data={[
+          vehicleJsonLd(vehicle),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            {
+              name: `Rent in ${vehicle.district}`,
+              path: `/rent/${slugify(vehicle.district || "")}`,
+            },
+            {
+              name: `${vehicle.make} ${vehicle.model} ${vehicle.year}`,
+              path: `/explore/${vehicle.id}`,
+            },
+          ]),
+        ]}
+      />
     </div>
   );
 }

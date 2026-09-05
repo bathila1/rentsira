@@ -3,12 +3,9 @@
    Premium Crimson Minimalist
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
 
-/* ── TAILWIND ─────────────────────────────────────────── */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ── TAILWIND v4 ──────────────────────────────────────── */
+@import "tailwindcss";
 
 /* ============================================================
    1. DESIGN TOKENS — Edit here to retheme the entire site
@@ -516,13 +513,29 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
   box-shadow: 0 0 0 1px var(--red-200), var(--shadow-md);
 }
 
-.vehicle-card-image {
+/* Fixed 4:3 media box. Reserving the space up front keeps the card from
+   reflowing as images arrive, which is what Cumulative Layout Shift measures. */
+.vehicle-card-media {
+  position: relative;
   width: 100%;
-  height: 180px;
-  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
   background: var(--bg-subtle);
-  display: block;
+}
+
+.vehicle-card-image {
+  object-fit: cover;
   transition: transform 0.4s ease;
+}
+
+.vehicle-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--neutral-300);
 }
 
 .vehicle-card:hover .vehicle-card-image {
@@ -531,15 +544,30 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
 
 .vehicle-card-body { padding: var(--space-4); }
 
+.vehicle-card-foot {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .vehicle-card-title {
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   letter-spacing: -0.01em;
+  /* Wrap to a second line instead of truncating: a hidden model name costs the
+     visitor the one detail they are scanning for. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  min-height: calc(2 * 1.35em);
 }
 
 .vehicle-card-sub {
@@ -600,7 +628,7 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
 @media (max-width: 768px) {
   .hero-eyebrow {
     font-size: 0.50rem;           /* Smaller text */
-    padding: 1px 5;            /* Tighter padding */
+    padding: 2px 8px;             /* Tighter padding */
     gap: var(--space-1);          /* Less space between icon and text */
     margin-bottom: var(--space-2); /* Less space below the tag */
     margin-top: var(--space-5); 
@@ -1268,3 +1296,783 @@ small { font-size: 0.8rem; color: var(--text-tertiary); }
     display: block; /* Change to flex or grid if your layout needs it */
   }
 }
+
+
+/* ============================================================
+   LANDING PAGES (/rent/[district]/[type]) + SHARED LAYOUT
+   ============================================================ */
+
+.breadcrumbs {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+.breadcrumbs a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover { text-decoration: underline; }
+
+.landing-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.landing-sub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 70ch;
+}
+
+.landing-cta { margin-top: var(--space-5); }
+
+/* Responsive listing grid, shared by every page that shows vehicle cards.
+   auto-fill with a min of 150px means two cards fit on the narrowest phones
+   instead of one giant card per screen. */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .vehicle-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+/* ── Type / filter chips ── */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.83rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.chip-active {
+  background: var(--neutral-950);
+  border-color: var(--neutral-950);
+  color: var(--neutral-0);
+}
+
+/* ── Long-form copy + FAQ ── */
+.landing-copy {
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border-default);
+  max-width: 75ch;
+}
+
+.landing-copy h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: var(--space-8) 0 var(--space-3);
+  color: var(--text-primary);
+}
+
+.landing-copy h2:first-child { margin-top: 0; }
+
+.landing-copy p {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.faq-list { margin: 0; }
+
+.faq-item {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.faq-item dt {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.faq-item dd {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.district-links {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-2);
+}
+
+.district-links a {
+  font-size: 0.85rem;
+  color: var(--text-link);
+  text-decoration: none;
+}
+
+.district-links a:hover { text-decoration: underline; }
+
+/* ============================================================
+   MOBILE USABILITY
+   ============================================================ */
+
+/* Anything tappable gets a comfortable target. The WCAG guidance is 44x44px;
+   several controls here were closer to 28px, which is a real miss-rate problem
+   on a phone. */
+@media (max-width: 767px) {
+  .btn,
+  .pagination-btn,
+  .chip,
+  button,
+  select,
+  a.btn {
+    min-height: 44px;
+  }
+
+  .btn-sm { min-height: 38px; }
+}
+
+/* Keep the focus ring visible for keyboard users — several elements set
+   `outline: none` for looks, which leaves keyboard navigation invisible. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Respect a reduced-motion preference across every animation on the site. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Nothing should ever force the page to scroll sideways on a phone. */
+html, body { overflow-x: hidden; max-width: 100%; }
+
+
+/* ============================================================
+   HOMEPAGE + SHARED SECTION LAYOUT
+   ============================================================ */
+
+/* Visually hidden, still read by screen readers. Used for input labels that
+   would otherwise be missing entirely. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-inner {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-actions {
+  max-width: 720px;
+  margin: var(--space-8) auto 0;
+}
+
+.hero-or {
+  color: rgb(255 255 255 / 0.55);
+  font-size: 0.8rem;
+  margin: var(--space-4) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hero-request {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.hero-request-text {
+  color: rgb(255 255 255 / 0.7);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-3);
+}
+
+/* ── Hero search bar ── */
+.hero-search { width: 100%; }
+
+.hero-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--neutral-0);
+  border-radius: var(--radius-xl);
+  padding: 6px 6px 6px var(--space-4);
+  box-shadow: 0 8px 40px rgb(0 0 0 / 0.3);
+}
+
+.hero-search-icon { flex-shrink: 0; font-size: 1rem; }
+
+.hero-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: var(--space-3) 0;
+}
+
+/* Strip the browser's own clear button so it cannot overlap our submit. */
+.hero-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.hero-search-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.7rem 1.3rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.hero-search-btn:hover:not(:disabled) { background: var(--color-primary-hover); }
+.hero-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.hero-search-error {
+  margin-top: var(--space-2);
+  font-size: 0.8rem;
+  color: var(--red-300);
+}
+
+@media (max-width: 480px) {
+  .hero-search-bar { padding-left: var(--space-3); }
+  .hero-search-btn { padding: 0.7rem 0.9rem; font-size: 0.85rem; }
+}
+
+/* ── Generic content sections ── */
+.section { padding: var(--space-16) 0; }
+.section-alt { background: var(--bg-subtle); }
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.section-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: 1.7;
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.section-head .section-sub { margin-bottom: 0; }
+
+/* ── City tiles ── */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.tile:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.tile-icon { flex-shrink: 0; }
+.tile-label { min-width: 0; }
+
+/* ── How it works ── */
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.step {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9rem;
+  margin-bottom: var(--space-3);
+}
+
+.step-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+}
+
+.step-text {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* ── Owner call to action ── */
+.owner-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  padding: var(--space-8);
+  border-radius: var(--radius-2xl);
+  background: var(--neutral-950);
+  color: var(--neutral-0);
+}
+
+.owner-cta .section-title { color: var(--neutral-0); }
+.owner-cta .section-sub { color: var(--neutral-400); }
+
+/* ── Explore page heading ── */
+.explore-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 4vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.explore-count {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* Keeps the keyword-bearing half of a detail-page H1 from shouting. */
+.h1-qualifier {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.62em;
+  display: block;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .section { padding: var(--space-10) 0; }
+  .hero { padding: var(--space-12) 0; }
+  .owner-cta { padding: var(--space-6); }
+}
+
+
+/* ── Header navigation ── */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.nav-link {
+  padding: 8px 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.nav-link:hover { color: var(--color-primary); background: var(--bg-subtle); }
+
+/* On a narrow phone the brand plus four controls will not fit, so the least
+   critical items collapse rather than wrapping onto a second line. */
+@media (max-width: 560px) {
+  .nav-link-wide { display: none; }
+  .nav-search-label { display: none; }
+  .nav-links { gap: 4px; }
+}
+
+/* ── Maintenance page ── */
+.maintenance {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-4);
+  background: var(--bg-page);
+}
+
+.maintenance-icon { font-size: 3rem; }
+
+.maintenance-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.maintenance-text {
+  max-width: 46ch;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+
+/* ── Filter bar on small screens ──
+   The filter bar is now rendered on mobile too (it used to be inside a
+   `hiddenFromMobile` wrapper, so phone users had no filters at all). Its
+   controls need to stretch rather than sit in a cramped single row. */
+@media (max-width: 640px) {
+  .filter-bar {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .filter-bar > select {
+    flex: 1 1 calc(50% - var(--space-2));
+    min-width: 0;
+  }
+
+  .filter-bar > button {
+    flex: 1 1 100%;
+  }
+}
+
+
+/* ============================================================
+   MOTION — scroll reveals, hero atmosphere, micro-interactions
+   Everything here animates only opacity/transform so it stays on
+   the compositor. The prefers-reduced-motion block further down
+   neutralises all of it for anyone who asks for less movement.
+   ============================================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* ── Hero atmosphere ──────────────────────────────────────── */
+
+.hero {
+  /* Let the orbs bleed to the edges without creating a scrollbar. */
+  isolation: isolate;
+}
+
+/* Slow drifting colour blooms behind the hero copy. */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-orb-1 {
+  width: 46vw;
+  height: 46vw;
+  max-width: 520px;
+  max-height: 520px;
+  top: -12%;
+  left: -8%;
+  background: radial-gradient(circle, rgb(248 50 50 / 0.55), transparent 68%);
+  animation: orb-drift-a 18s ease-in-out infinite;
+}
+
+.hero-orb-2 {
+  width: 38vw;
+  height: 38vw;
+  max-width: 440px;
+  max-height: 440px;
+  bottom: -14%;
+  right: -6%;
+  background: radial-gradient(circle, rgb(194 13 13 / 0.5), transparent 70%);
+  animation: orb-drift-b 22s ease-in-out infinite;
+}
+
+@keyframes orb-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(6%, 8%, 0) scale(1.12); }
+}
+
+@keyframes orb-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); }
+  50%      { transform: translate3d(-7%, -6%, 0) scale(1); }
+}
+
+/* Entrance for the hero copy — runs once, on load, no observer needed. */
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hero-rise {
+  animation: hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-rise-1 { animation-delay: 0.05s; }
+.hero-rise-2 { animation-delay: 0.15s; }
+.hero-rise-3 { animation-delay: 0.25s; }
+.hero-rise-4 { animation-delay: 0.35s; }
+
+/* Gradient sweep across the accent word in the headline. */
+.hero-title .accent {
+  background: linear-gradient(
+    100deg,
+    var(--red-500) 0%,
+    var(--red-300) 45%,
+    var(--red-500) 90%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: accent-sweep 6s linear infinite;
+}
+
+@keyframes accent-sweep {
+  to { background-position: 220% center; }
+}
+
+/* ── Trust strip ──────────────────────────────────────────── */
+
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3) var(--space-6);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.75);
+}
+
+.trust-item strong {
+  color: var(--neutral-0);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ── Card + tile micro-interactions ───────────────────────── */
+
+.tile {
+  position: relative;
+  overflow: hidden;
+}
+
+/* A light sheen that sweeps across on hover. */
+.tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(248 50 50 / 0.08) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  background-position: 220% 0;
+  transition: background-position 0.6s ease;
+  pointer-events: none;
+}
+
+.tile:hover::after { background-position: -20% 0; }
+
+.vehicle-card {
+  /* Smoother, springier lift than the default ease. */
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.vehicle-card:hover { transform: translateY(-6px); }
+.vehicle-card:active { transform: translateY(-2px); }
+
+.chip { transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+.chip:hover { transform: translateY(-2px); }
+
+.step {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+}
+
+.step:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.step-num {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step:hover .step-num { transform: scale(1.12) rotate(-6deg); }
+
+/* Buttons get a subtle press response everywhere. */
+.btn { transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease; }
+.btn:active { transform: scale(0.97); }
+
+/* Section headings get an animated underline accent. */
+.section-title-accent {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.section-title-accent::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--color-primary), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible .section-title-accent::after { transform: scaleX(1); }
+
+/* Nudges the eye down from the hero on first load. */
+.scroll-cue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-8);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.45);
+}
+
+.scroll-cue span[aria-hidden] {
+  animation: cue-bounce 1.8s ease-in-out infinite;
+}
+
+@keyframes cue-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(5px); opacity: 1; }
+}
+
+/* Smooth in-page scrolling, unless the visitor prefers reduced motion (the
+   global reduced-motion block resets scroll-behavior to auto). */
+html { scroll-behavior: smooth; }

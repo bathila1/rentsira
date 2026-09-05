@@ -1,5 +1,18 @@
 import { settingsData } from "@/settings";
 import Link from "next/link";
+import { slugify } from "@/utils/seo";
+
+/** Cities linked from the footer, so every page points at the landing pages. */
+const FOOTER_DISTRICTS = [
+  "Colombo",
+  "Gampaha",
+  "Kandy",
+  "Galle",
+  "Kurunegala",
+  "Kalutara",
+  "Matara",
+  "Jaffna",
+];
 
 const Footer = () => {
   return (
@@ -11,31 +24,13 @@ const Footer = () => {
         marginTop: "var(--space-16)",
       }}
     >
-      <div className="hiddenForSeoOptimization" >
-      <p style={{
-        color: "transparent",
-      }}>LUXURY VEHICLES
-
-Toyota Premio
-Toyota TRJ 120 Prado
-Toyota Avanza 2017
-Toyota Hilux Cab
-Toyota TRJ 150 Prado
-MINI CARS
-
-Nissan March
-Suzuki Japan Alto
-Vans
-
-Suzuki Every Buddy Van Auto
-STANDARD VEHICLES
-
-Suzuki Swift
-Toyota Vitz
-Toyota Avanza
-Toyota Allion
-Toyota Premio</p>
-      </div>
+      {/*
+        This slot previously held a block of vehicle names rendered in
+        `color: transparent` — text served to crawlers but hidden from people.
+        That is hidden text under Google's spam policies and risks a manual
+        action against the whole domain, so it has been replaced with the real,
+        visible city links below, which target the same searches honestly.
+      */}
       <div
         className="container"
         style={{ padding: "var(--space-10) var(--space-4)" }}
@@ -109,12 +104,45 @@ Toyota Premio</p>
                 <Link href="/explore" className="footer-link">
                   Browse Vehicles
                 </Link>
-                <Link href="/login" className="footer-link">
+                <Link href="/get-started" className="footer-link">
                   Add Your Vehicle
                 </Link>
                 <Link href="/contact" className="footer-link">
                   Contact Us
                 </Link>
+              </div>
+            </div>
+
+            {/* Popular cities — real internal links to the landing pages */}
+            <div>
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--neutral-400)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                Rent by city
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--space-2)",
+                }}
+              >
+                {FOOTER_DISTRICTS.map((d) => (
+                  <Link
+                    key={d}
+                    href={`/rent/${slugify(d)}`}
+                    className="footer-link"
+                  >
+                    Rent a car in {d}
+                  </Link>
+                ))}
               </div>
             </div>
 

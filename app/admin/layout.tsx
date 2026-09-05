@@ -1,8 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-// NEXT_PUBLIC_ADMIN_EMAIL
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@renta.lk";
+// Prefer the server-only ADMIN_EMAIL. NEXT_PUBLIC_* variables are inlined into
+// the JavaScript bundle that every visitor downloads, which would publish the
+// admin address to anyone who opens devtools. NEXT_PUBLIC_ADMIN_EMAIL is kept
+// only as a fallback so an existing deployment does not lock its admin out.
+const ADMIN_EMAIL =
+  process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@renta.lk";
 
 export default async function AdminLayout({
   children,
@@ -49,6 +53,7 @@ export default async function AdminLayout({
           <SidebarLink href="/admin/bookings" icon="📅" label="Bookings" />
           <SidebarLink href="/admin/users" icon="👥" label="Users" />
           <SidebarLink href="/admin/vehicles" icon="🚗" label="Vehicles" />
+          <SidebarLink href="/admin/settings" icon="⚙️" label="Settings" />
         </nav>
 
         <div style={{ padding: "20px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
