@@ -127,7 +127,7 @@ export default async function Home() {
           <h1 className="hero-title hero-rise hero-rise-2">
             Rent a vehicle
             <br />
-            <span className="accent">Vehicles for Rent</span>
+            <span className="accent">renta.lk</span>
           </h1>
 
           {/* <p className="hero-sub">
