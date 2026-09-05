@@ -58,6 +58,13 @@ export const metadata: Metadata = {
     url: SITE_URL,
   },
 
+  // Google Search Console ownership check. Next renders this as
+  // <meta name="google-site-verification" ...>. Leave it in place permanently —
+  // Google re-checks periodically and removing it un-verifies the property.
+  verification: {
+    google: "JfgbAIsL_MvSBs1zpvzWiqp613HoluGAGRxYGJKJ07Y",
+  },
+
   robots: {
     index: true,
     follow: true,
